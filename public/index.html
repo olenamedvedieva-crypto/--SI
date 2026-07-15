@@ -1149,14 +1149,6 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Кур'єр уточнив місце / спосіб передачі замовлення?</label>
-          <div class="yesno-group">
-            <label class="yesno-label yes"><input type="radio" name="b2_clarified" value="yes"> ✅ Так</label>
-            <label class="yesno-label no"><input type="radio" name="b2_clarified" value="no"> ❌ Ні</label>
-          </div>
-        </div>
-
-        <div class="form-group">
           <label class="form-label">Коментар до блоку</label>
           <textarea class="form-textarea" id="b2_comment" placeholder="Опис зовнішнього вигляду, конкретні фрази кур'єра, інциденти..."></textarea>
         </div>
@@ -1832,7 +1824,6 @@ async function handleSubmit(e) {
     b4Comment: fieldValue('b4_comment'),
     b2Named: radioValue('b2_named'),
     b2OfferedCheck: radioValue('b2_offered_check'),
-    b2Clarified: radioValue('b2_clarified'),
     b3AllItems: radioValue('b3_all_items'),
     b4ReceiptGiven: radioValue('b4_receipt_given'),
     b4ChangeGiven: radioValue('b4_change_given'),
