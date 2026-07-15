@@ -797,8 +797,8 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Номер замовлення *</label>
-            <input type="text" class="form-input" id="orderId" placeholder="Напр. #12345" required>
+            <label class="form-label">Номер телефону отримувача *</label>
+            <input type="tel" class="form-input" id="orderId" placeholder="Напр. +380 67 123 45 67" required>
           </div>
           <div class="form-group">
             <label class="form-label">Країна *</label>
@@ -833,6 +833,7 @@
               <option>Сайт</option>
               <option>Телефон</option>
               <option>Месенджер</option>
+              <option>На локації</option>
             </select>
           </div>
           <div class="form-group">
@@ -854,61 +855,223 @@
       <div class="card">
         <div class="section-badge" style="background:#ECFEFF; color:var(--cyan);">🛒 Блок 1 · 25%</div>
         <div class="form-section-title">Оформлення замовлення</div>
-        <div class="form-section-sub">Оцініть процес оформлення та зручність платформи</div>
+        <div class="form-section-sub" id="b1SectionSub">Оцініть процес оформлення та зручність платформи</div>
 
-        <div class="rating-field">
-          <div class="rating-label">
-            Зручність інтерфейсу / застосунку
-            <span class="rating-desc">навігація, пошук, зрозумілість</span>
+        <div id="b1-variant-default">
+          <div class="rating-field">
+            <div class="rating-label">
+              Зручність інтерфейсу / застосунку
+              <span class="rating-desc">навігація, пошук, зрозумілість</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_interface" id="b1_i5" value="5"><label for="b1_i5">★</label>
+              <input type="radio" name="b1_interface" id="b1_i4" value="4"><label for="b1_i4">★</label>
+              <input type="radio" name="b1_interface" id="b1_i3" value="3"><label for="b1_i3">★</label>
+              <input type="radio" name="b1_interface" id="b1_i2" value="2"><label for="b1_i2">★</label>
+              <input type="radio" name="b1_interface" id="b1_i1" value="1"><label for="b1_i1">★</label>
+            </div>
           </div>
-          <div class="stars">
-            <input type="radio" name="b1_interface" id="b1_i5" value="5"><label for="b1_i5">★</label>
-            <input type="radio" name="b1_interface" id="b1_i4" value="4"><label for="b1_i4">★</label>
-            <input type="radio" name="b1_interface" id="b1_i3" value="3"><label for="b1_i3">★</label>
-            <input type="radio" name="b1_interface" id="b1_i2" value="2"><label for="b1_i2">★</label>
-            <input type="radio" name="b1_interface" id="b1_i1" value="1"><label for="b1_i1">★</label>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Повнота інформації про товари / послуги
+              <span class="rating-desc">опис, фото, склад, ціна</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_info" id="b1_inf5" value="5"><label for="b1_inf5">★</label>
+              <input type="radio" name="b1_info" id="b1_inf4" value="4"><label for="b1_inf4">★</label>
+              <input type="radio" name="b1_info" id="b1_inf3" value="3"><label for="b1_inf3">★</label>
+              <input type="radio" name="b1_info" id="b1_inf2" value="2"><label for="b1_inf2">★</label>
+              <input type="radio" name="b1_info" id="b1_inf1" value="1"><label for="b1_inf1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Швидкість підтвердження замовлення
+              <span class="rating-desc">час очікування сповіщення</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_confirm" id="b1_c5" value="5"><label for="b1_c5">★</label>
+              <input type="radio" name="b1_confirm" id="b1_c4" value="4"><label for="b1_c4">★</label>
+              <input type="radio" name="b1_confirm" id="b1_c3" value="3"><label for="b1_c3">★</label>
+              <input type="radio" name="b1_confirm" id="b1_c2" value="2"><label for="b1_c2">★</label>
+              <input type="radio" name="b1_confirm" id="b1_c1" value="1"><label for="b1_c1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Зручність відстеження замовлення
+              <span class="rating-desc">трекінг, сповіщення про статус</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_tracking" id="b1_t5" value="5"><label for="b1_t5">★</label>
+              <input type="radio" name="b1_tracking" id="b1_t4" value="4"><label for="b1_t4">★</label>
+              <input type="radio" name="b1_tracking" id="b1_t3" value="3"><label for="b1_t3">★</label>
+              <input type="radio" name="b1_tracking" id="b1_t2" value="2"><label for="b1_t2">★</label>
+              <input type="radio" name="b1_tracking" id="b1_t1" value="1"><label for="b1_t1">★</label>
+            </div>
           </div>
         </div>
 
-        <div class="rating-field">
-          <div class="rating-label">
-            Повнота інформації про товари / послуги
-            <span class="rating-desc">опис, фото, склад, ціна</span>
+        <div id="b1-variant-phone" style="display:none;">
+          <div class="rating-field">
+            <div class="rating-label">
+              Швидкість з'єднання з оператором
+              <span class="rating-desc">час очікування на лінії, кількість спроб додзвону</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_p_speed" id="b1_ps5" value="5"><label for="b1_ps5">★</label>
+              <input type="radio" name="b1_p_speed" id="b1_ps4" value="4"><label for="b1_ps4">★</label>
+              <input type="radio" name="b1_p_speed" id="b1_ps3" value="3"><label for="b1_ps3">★</label>
+              <input type="radio" name="b1_p_speed" id="b1_ps2" value="2"><label for="b1_ps2">★</label>
+              <input type="radio" name="b1_p_speed" id="b1_ps1" value="1"><label for="b1_ps1">★</label>
+            </div>
           </div>
-          <div class="stars">
-            <input type="radio" name="b1_info" id="b1_inf5" value="5"><label for="b1_inf5">★</label>
-            <input type="radio" name="b1_info" id="b1_inf4" value="4"><label for="b1_inf4">★</label>
-            <input type="radio" name="b1_info" id="b1_inf3" value="3"><label for="b1_inf3">★</label>
-            <input type="radio" name="b1_info" id="b1_inf2" value="2"><label for="b1_inf2">★</label>
-            <input type="radio" name="b1_info" id="b1_inf1" value="1"><label for="b1_inf1">★</label>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Ввічливість і тон спілкування оператора
+              <span class="rating-desc">привітання, доброзичливість, грамотна мова</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_p_manner" id="b1_pm5" value="5"><label for="b1_pm5">★</label>
+              <input type="radio" name="b1_p_manner" id="b1_pm4" value="4"><label for="b1_pm4">★</label>
+              <input type="radio" name="b1_p_manner" id="b1_pm3" value="3"><label for="b1_pm3">★</label>
+              <input type="radio" name="b1_p_manner" id="b1_pm2" value="2"><label for="b1_pm2">★</label>
+              <input type="radio" name="b1_p_manner" id="b1_pm1" value="1"><label for="b1_pm1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Повнота консультації
+              <span class="rating-desc">товар/послуга, ціна, склад, строки доставки — без необхідності перепитувати</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_p_info" id="b1_pi5" value="5"><label for="b1_pi5">★</label>
+              <input type="radio" name="b1_p_info" id="b1_pi4" value="4"><label for="b1_pi4">★</label>
+              <input type="radio" name="b1_p_info" id="b1_pi3" value="3"><label for="b1_pi3">★</label>
+              <input type="radio" name="b1_p_info" id="b1_pi2" value="2"><label for="b1_pi2">★</label>
+              <input type="radio" name="b1_p_info" id="b1_pi1" value="1"><label for="b1_pi1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Компетентність при оформленні замовлення
+              <span class="rating-desc">правильно зафіксовано адресу, позиції, спосіб оплати; підтвердив деталі</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_p_order" id="b1_po5" value="5"><label for="b1_po5">★</label>
+              <input type="radio" name="b1_p_order" id="b1_po4" value="4"><label for="b1_po4">★</label>
+              <input type="radio" name="b1_p_order" id="b1_po3" value="3"><label for="b1_po3">★</label>
+              <input type="radio" name="b1_p_order" id="b1_po2" value="2"><label for="b1_po2">★</label>
+              <input type="radio" name="b1_p_order" id="b1_po1" value="1"><label for="b1_po1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Пропозиція додаткових товарів / послуг
+              <span class="rating-desc">чи запропонував оператор апсейл — супутні товари, акції, більший обсяг замовлення</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_p_upsell" id="b1_pu5" value="5"><label for="b1_pu5">★</label>
+              <input type="radio" name="b1_p_upsell" id="b1_pu4" value="4"><label for="b1_pu4">★</label>
+              <input type="radio" name="b1_p_upsell" id="b1_pu3" value="3"><label for="b1_pu3">★</label>
+              <input type="radio" name="b1_p_upsell" id="b1_pu2" value="2"><label for="b1_pu2">★</label>
+              <input type="radio" name="b1_p_upsell" id="b1_pu1" value="1"><label for="b1_pu1">★</label>
+            </div>
           </div>
         </div>
 
-        <div class="rating-field">
-          <div class="rating-label">
-            Швидкість підтвердження замовлення
-            <span class="rating-desc">час очікування сповіщення</span>
+        <div id="b1-variant-onsite" style="display:none;">
+          <div class="rating-field">
+            <div class="rating-label">
+              Чистота та охайність локації
+              <span class="rating-desc">вигляд торгової точки/каси, охайність робочого місця та вітрини</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_o_clean" id="b1_oc5" value="5"><label for="b1_oc5">★</label>
+              <input type="radio" name="b1_o_clean" id="b1_oc4" value="4"><label for="b1_oc4">★</label>
+              <input type="radio" name="b1_o_clean" id="b1_oc3" value="3"><label for="b1_oc3">★</label>
+              <input type="radio" name="b1_o_clean" id="b1_oc2" value="2"><label for="b1_oc2">★</label>
+              <input type="radio" name="b1_o_clean" id="b1_oc1" value="1"><label for="b1_oc1">★</label>
+            </div>
           </div>
-          <div class="stars">
-            <input type="radio" name="b1_confirm" id="b1_c5" value="5"><label for="b1_c5">★</label>
-            <input type="radio" name="b1_confirm" id="b1_c4" value="4"><label for="b1_c4">★</label>
-            <input type="radio" name="b1_confirm" id="b1_c3" value="3"><label for="b1_c3">★</label>
-            <input type="radio" name="b1_confirm" id="b1_c2" value="2"><label for="b1_c2">★</label>
-            <input type="radio" name="b1_confirm" id="b1_c1" value="1"><label for="b1_c1">★</label>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Ввічливість і привітність працівника
+              <span class="rating-desc">привітання, доброзичливість, охайний вигляд персоналу</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_o_manner" id="b1_om5" value="5"><label for="b1_om5">★</label>
+              <input type="radio" name="b1_o_manner" id="b1_om4" value="4"><label for="b1_om4">★</label>
+              <input type="radio" name="b1_o_manner" id="b1_om3" value="3"><label for="b1_om3">★</label>
+              <input type="radio" name="b1_o_manner" id="b1_om2" value="2"><label for="b1_om2">★</label>
+              <input type="radio" name="b1_o_manner" id="b1_om1" value="1"><label for="b1_om1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Повнота консультації
+              <span class="rating-desc">товар/послуга, ціна, склад, акції — без необхідності перепитувати</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_o_info" id="b1_oi5" value="5"><label for="b1_oi5">★</label>
+              <input type="radio" name="b1_o_info" id="b1_oi4" value="4"><label for="b1_oi4">★</label>
+              <input type="radio" name="b1_o_info" id="b1_oi3" value="3"><label for="b1_oi3">★</label>
+              <input type="radio" name="b1_o_info" id="b1_oi2" value="2"><label for="b1_oi2">★</label>
+              <input type="radio" name="b1_o_info" id="b1_oi1" value="1"><label for="b1_oi1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Точність оформлення замовлення
+              <span class="rating-desc">правильно зафіксовано позиції, побажання, спосіб оплати</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_o_order" id="b1_oo5" value="5"><label for="b1_oo5">★</label>
+              <input type="radio" name="b1_o_order" id="b1_oo4" value="4"><label for="b1_oo4">★</label>
+              <input type="radio" name="b1_o_order" id="b1_oo3" value="3"><label for="b1_oo3">★</label>
+              <input type="radio" name="b1_o_order" id="b1_oo2" value="2"><label for="b1_oo2">★</label>
+              <input type="radio" name="b1_o_order" id="b1_oo1" value="1"><label for="b1_oo1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Пропозиція додаткових товарів / послуг
+              <span class="rating-desc">чи запропонував працівник апсейл — супутні товари, акції, більший обсяг замовлення</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_o_upsell" id="b1_ou5" value="5"><label for="b1_ou5">★</label>
+              <input type="radio" name="b1_o_upsell" id="b1_ou4" value="4"><label for="b1_ou4">★</label>
+              <input type="radio" name="b1_o_upsell" id="b1_ou3" value="3"><label for="b1_ou3">★</label>
+              <input type="radio" name="b1_o_upsell" id="b1_ou2" value="2"><label for="b1_ou2">★</label>
+              <input type="radio" name="b1_o_upsell" id="b1_ou1" value="1"><label for="b1_ou1">★</label>
+            </div>
           </div>
         </div>
 
-        <div class="rating-field">
-          <div class="rating-label">
-            Зручність відстеження замовлення
-            <span class="rating-desc">трекінг, сповіщення про статус</span>
-          </div>
-          <div class="stars">
-            <input type="radio" name="b1_tracking" id="b1_t5" value="5"><label for="b1_t5">★</label>
-            <input type="radio" name="b1_tracking" id="b1_t4" value="4"><label for="b1_t4">★</label>
-            <input type="radio" name="b1_tracking" id="b1_t3" value="3"><label for="b1_t3">★</label>
-            <input type="radio" name="b1_tracking" id="b1_t2" value="2"><label for="b1_t2">★</label>
-            <input type="radio" name="b1_tracking" id="b1_t1" value="1"><label for="b1_t1">★</label>
+        <div id="b1-pickup-time" style="display:none;">
+          <div class="rating-field">
+            <div class="rating-label">
+              Час очікування готовності замовлення
+              <span class="rating-desc">від оформлення до моменту, коли замовлення готове забрати на самовивіз</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_pickup_time" id="b1_pt5" value="5"><label for="b1_pt5">★</label>
+              <input type="radio" name="b1_pickup_time" id="b1_pt4" value="4"><label for="b1_pt4">★</label>
+              <input type="radio" name="b1_pickup_time" id="b1_pt3" value="3"><label for="b1_pt3">★</label>
+              <input type="radio" name="b1_pickup_time" id="b1_pt2" value="2"><label for="b1_pt2">★</label>
+              <input type="radio" name="b1_pickup_time" id="b1_pt1" value="1"><label for="b1_pt1">★</label>
+            </div>
           </div>
         </div>
 
@@ -919,11 +1082,12 @@
       </div>
 
       <!-- БЛОК 2 -->
-      <div class="card">
+      <div class="card" id="block2Card">
         <div class="section-badge" style="background:#F5F3FF; color:var(--purple);">🚴 Блок 2 · 35%</div>
         <div class="form-section-title">Доставка та кур'єр</div>
         <div class="form-section-sub">Оцініть роботу кур'єра та відповідність стандартам</div>
 
+        <div id="block2Content">
         <div class="rating-field">
           <div class="rating-label">
             Відповідність часу доставки заявленому
@@ -995,6 +1159,11 @@
         <div class="form-group">
           <label class="form-label">Коментар до блоку</label>
           <textarea class="form-textarea" id="b2_comment" placeholder="Опис зовнішнього вигляду, конкретні фрази кур'єра, інциденти..."></textarea>
+        </div>
+        </div>
+
+        <div id="block2NotApplicable" style="display:none; padding:16px; background:var(--surface-2); border:1px dashed var(--border); border-radius:10px; font-size:13px; color:var(--text-2);">
+          🚫 Не оцінюється — обрано «Самовивіз», кур'єр не задіяний.
         </div>
       </div>
 
@@ -1213,8 +1382,8 @@
         </div>
 
         <div style="background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px;">
-          <div style="font-size:13px; font-weight:700; color:var(--text-1); margin-bottom:10px;">📤 Прикріпіть файли (фото і відео)</div>
-          <input type="file" id="evidenceFiles" multiple accept="image/*,video/*" class="form-input" style="padding:8px 10px;">
+          <div style="font-size:13px; font-weight:700; color:var(--text-1); margin-bottom:10px;">📤 Прикріпіть файли (фото і відео) *</div>
+          <input type="file" id="evidenceFiles" multiple accept="image/*,video/*" class="form-input" style="padding:8px 10px;" required>
           <div id="evidenceFileList" style="margin-top:8px; font-size:12px; color:var(--text-2);"></div>
           <div id="evidenceFolderPath" style="margin-top:12px; padding:10px 12px; background:var(--primary-light); border:1px solid #C7D2FE; border-radius:8px; font-size:12.5px; color:var(--primary);">
             📁 Файли збережуться на сервері у папці: <strong>оберіть країну, місто й адресу в блоці 0 вище</strong>
@@ -1224,7 +1393,7 @@
 
         <div style="display:flex; gap:10px; padding:12px 16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; font-size:12.5px; color:#065F46;">
           <span style="flex-shrink:0;">💡</span>
-          <span>Усі матеріали надсилайте до спільного чату / корпоративного сховища одразу після заповнення форми. Файли без підпису <em>«[дата] [місто] [номер замовлення]»</em> не приймаються.</span>
+          <span>Усі матеріали надсилайте до спільного чату / корпоративного сховища одразу після заповнення форми. Файли без підпису <em>«[дата] [місто] [номер телефону отримувача]»</em> не приймаються.</span>
         </div>
       </div>
 
@@ -1369,7 +1538,7 @@
           <thead>
             <tr>
               <th>Дата</th>
-              <th>Замовлення</th>
+              <th>Телефон отримувача</th>
               <th>Країна</th>
               <th>Адреса / Концепція</th>
               <th>Оформлення</th>
@@ -1434,8 +1603,21 @@ async function loadReviews() {
 }
 
 const WEIGHTS = { b1:0.25, b2:0.35, b3:0.35, b4:0.05 };
+// Block 2 (courier) can be null when the order was a self-pickup ("Самовивіз")
+// — in that case its weight is redistributed proportionally among the other
+// filled blocks instead of counting as a 0.
+function weightedScore(b1, b2, b3, b4) {
+  const parts = [];
+  if (b1 !== null && b1 !== undefined) parts.push([b1, WEIGHTS.b1]);
+  if (b2 !== null && b2 !== undefined) parts.push([b2, WEIGHTS.b2]);
+  if (b3 !== null && b3 !== undefined) parts.push([b3, WEIGHTS.b3]);
+  if (b4 !== null && b4 !== undefined) parts.push([b4, WEIGHTS.b4]);
+  const totalWeight = parts.reduce((s, p) => s + p[1], 0);
+  if (!totalWeight) return 0;
+  return parts.reduce((s, p) => s + p[0] * p[1], 0) / totalWeight;
+}
 function weighted(r) {
-  return r.b1*WEIGHTS.b1 + r.b2*WEIGHTS.b2 + r.b3*WEIGHTS.b3 + r.b4*WEIGHTS.b4;
+  return weightedScore(r.b1, r.b2, r.b3, r.b4);
 }
 
 // ─── TABS ───────────────────────────────────────────────────────────────────
@@ -1456,6 +1638,38 @@ document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
 document.getElementById('evalForm').addEventListener('submit', handleSubmit);
 document.getElementById('country').addEventListener('change', onCountryChange);
 document.getElementById('city').addEventListener('change', onCityChange);
+
+// ─── BLOCK 1 VARIANT (channel-dependent) ───────────────────────────────────
+// When the order was placed by phone, Block 1 asks about the call-center
+// operator instead of app/site usability.
+function updateB1Variant() {
+  const channel = document.getElementById('channel').value;
+  const isPhone = channel === 'Телефон';
+  const isOnsite = channel === 'На локації';
+  document.getElementById('b1-variant-default').style.display = (!isPhone && !isOnsite) ? '' : 'none';
+  document.getElementById('b1-variant-phone').style.display = isPhone ? '' : 'none';
+  document.getElementById('b1-variant-onsite').style.display = isOnsite ? '' : 'none';
+  document.getElementById('b1SectionSub').textContent = isPhone
+    ? 'Оцініть спілкування з оператором кол-центру під час оформлення замовлення'
+    : isOnsite
+      ? 'Оцініть обслуговування та спілкування з працівником під час оформлення замовлення на локації'
+      : 'Оцініть процес оформлення та зручність платформи';
+}
+document.getElementById('channel').addEventListener('change', updateB1Variant);
+updateB1Variant();
+
+// ─── PICKUP vs COURIER DELIVERY (deliveryType-dependent) ───────────────────
+// "Самовивіз" adds a "how long until ready" question to Block 1 and makes
+// Block 2 (courier) not applicable, since no courier is involved.
+function updateDeliveryTypeVariant() {
+  const isPickup = document.getElementById('deliveryType').value === 'Самовивіз';
+  document.getElementById('b1-pickup-time').style.display = isPickup ? '' : 'none';
+  document.getElementById('block2Content').style.display = isPickup ? 'none' : '';
+  document.getElementById('block2NotApplicable').style.display = isPickup ? '' : 'none';
+  calcLiveScore();
+}
+document.getElementById('deliveryType').addEventListener('change', updateDeliveryTypeVariant);
+updateDeliveryTypeVariant();
 
 // ─── EVIDENCE FILES ─────────────────────────────────────────────────────────
 // Files are uploaded to this app's own backend (see server/index.js →
@@ -1526,6 +1740,9 @@ document.getElementById('statResetBtn').addEventListener('click', () => {
 function calcLiveScore() {
   const blockMap = {
     b1_interface:'b1', b1_info:'b1', b1_confirm:'b1', b1_tracking:'b1',
+    b1_p_speed:'b1', b1_p_manner:'b1', b1_p_info:'b1', b1_p_order:'b1', b1_p_upsell:'b1',
+    b1_o_clean:'b1', b1_o_manner:'b1', b1_o_info:'b1', b1_o_order:'b1', b1_o_upsell:'b1',
+    b1_pickup_time:'b1',
     b2_time:'b2', b2_appearance:'b2', b2_politeness:'b2',
     b3_packaging:'b3', b3_completeness:'b3', b3_quality:'b3',
     b4_payment:'b4', b4_receipt:'b4'
@@ -1535,14 +1752,16 @@ function calcLiveScore() {
     const checked = document.querySelector(`input[name="${f}"]:checked`);
     if (checked) { sums[blockMap[f]] += +checked.value; counts[blockMap[f]]++; }
   });
+  const isPickup = document.getElementById('deliveryType').value === 'Самовивіз';
   const avgs = {};
   let allFilled = true;
   ['b1','b2','b3','b4'].forEach(b => {
+    if (b === 'b2' && isPickup) { avgs[b] = null; return; } // не застосовується при самовивозі
     avgs[b] = counts[b] > 0 ? sums[b]/counts[b] : null;
-    if (!avgs[b]) allFilled = false;
+    if (avgs[b] === null) allFilled = false;
   });
   if (allFilled) {
-    const score = avgs.b1*WEIGHTS.b1 + avgs.b2*WEIGHTS.b2 + avgs.b3*WEIGHTS.b3 + avgs.b4*WEIGHTS.b4;
+    const score = weightedScore(avgs.b1, avgs.b2, avgs.b3, avgs.b4);
     document.getElementById('scoreValue').textContent = score.toFixed(2);
   }
 }
@@ -1560,6 +1779,14 @@ function fieldValue(id) {
 
 async function handleSubmit(e) {
   e.preventDefault();
+
+  const evidenceInput = document.getElementById('evidenceFiles');
+  if (!evidenceInput.files.length) {
+    alert('Прикріпіть хоча б один файл (фото або відео) перед надсиланням форми.');
+    evidenceInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
   const submitBtn = e.target.querySelector('.submit-btn');
   if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ Надсилання…'; }
 
@@ -1576,6 +1803,15 @@ async function handleSubmit(e) {
   const location = fieldValue('location') || '—';
   const orderId = fieldValue('orderId') || '#—';
 
+  const isPickup = fieldValue('deliveryType') === 'Самовивіз';
+  const b1Fields = (
+    fieldValue('channel') === 'Телефон'
+      ? ['b1_p_speed','b1_p_manner','b1_p_info','b1_p_order','b1_p_upsell']
+      : fieldValue('channel') === 'На локації'
+        ? ['b1_o_clean','b1_o_manner','b1_o_info','b1_o_order','b1_o_upsell']
+        : ['b1_interface','b1_info','b1_confirm','b1_tracking']
+  ).concat(isPickup ? ['b1_pickup_time'] : []);
+
   const rec = {
     checkDate: fieldValue('checkDate') || new Date().toISOString().slice(0,10),
     checkTime: fieldValue('checkTime'),
@@ -1583,8 +1819,10 @@ async function handleSubmit(e) {
     channel: fieldValue('channel'),
     deliveryType: fieldValue('deliveryType'),
     guestName: fieldValue('guestName'),
-    b1: +getAvg(['b1_interface','b1_info','b1_confirm','b1_tracking']).toFixed(2),
-    b2: +getAvg(['b2_time','b2_appearance','b2_politeness']).toFixed(2),
+    b1: +getAvg(b1Fields).toFixed(2),
+    // Block 2 (courier) is not applicable for self-pickup — send null instead
+    // of a default/fake average so it's excluded from the weighted score.
+    b2: isPickup ? null : +getAvg(['b2_time','b2_appearance','b2_politeness']).toFixed(2),
     b3: +getAvg(['b3_packaging','b3_completeness','b3_quality']).toFixed(2),
     b4: +getAvg(['b4_payment','b4_receipt']).toFixed(2),
     nps: document.getElementById('npsValue').value !== '' ? +document.getElementById('npsValue').value : null,
@@ -1711,11 +1949,17 @@ function renderStats() {
   const npsVals = reviewsSrc.filter(r => r.nps !== null).map(r => r.nps);
   const avgNps = npsVals.length ? npsVals.reduce((a,b)=>a+b,0)/npsVals.length : 0;
 
+  // r.b2 can be null for self-pickup orders (no courier) — exclude those
+  // from this particular average instead of letting them drag it down.
+  const avgOfBlock = (field) => {
+    const vals = reviewsSrc.filter(r => r[field] !== null && r[field] !== undefined).map(r => r[field]);
+    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+  };
   const blockAvgs = {
-    'Оформлення': reviewsSrc.reduce((s,r)=>s+r.b1,0)/total,
-    'Доставка':   reviewsSrc.reduce((s,r)=>s+r.b2,0)/total,
-    'Пакування':  reviewsSrc.reduce((s,r)=>s+r.b3,0)/total,
-    'Взаємодія':  reviewsSrc.reduce((s,r)=>s+r.b4,0)/total,
+    'Оформлення': avgOfBlock('b1'),
+    'Доставка':   avgOfBlock('b2'),
+    'Пакування':  avgOfBlock('b3'),
+    'Взаємодія':  avgOfBlock('b4'),
   };
   const bestBlock = Object.entries(blockAvgs).sort((a,b)=>b[1]-a[1])[0];
 
@@ -1851,12 +2095,12 @@ function renderStats() {
 
   // Radar: критерії
   const criteriaAvg = {
-    'Інтерфейс':      reviewsSrc.reduce((s,r)=>s+r.b1,0)/total,
-    'Пунктуальність': reviewsSrc.reduce((s,r)=>s+r.b2,0)/total,
-    'Кур\'єр':        reviewsSrc.reduce((s,r)=>s+r.b2,0)/total,
-    'Пакування':      reviewsSrc.reduce((s,r)=>s+r.b3,0)/total,
-    'Комплектність':  reviewsSrc.reduce((s,r)=>s+r.b3,0)/total,
-    'Оплата':         reviewsSrc.reduce((s,r)=>s+r.b4,0)/total,
+    'Інтерфейс':      avgOfBlock('b1'),
+    'Пунктуальність': avgOfBlock('b2'),
+    'Кур\'єр':        avgOfBlock('b2'),
+    'Пакування':      avgOfBlock('b3'),
+    'Комплектність':  avgOfBlock('b3'),
+    'Оплата':         avgOfBlock('b4'),
   };
   charts.radar = new Chart(document.getElementById('radarChart'), {
     type: 'radar',
@@ -1931,7 +2175,7 @@ function renderStats() {
       <td>${flag} ${r.country || '—'}</td>
       <td style="font-size:12px;">${r.location || r.city || '—'}</td>
       <td>${r.b1.toFixed(1)}</td>
-      <td>${r.b2.toFixed(1)}</td>
+      <td>${r.b2 !== null ? r.b2.toFixed(1) : '—'}</td>
       <td>${r.b3.toFixed(1)}</td>
       <td>${r.b4.toFixed(1)}</td>
       <td><span class="score-chip ${chipClass}">${ws.toFixed(2)}</span></td>
@@ -2034,5 +2278,6 @@ function onCityChange() {
 // Init
 document.getElementById('checkDate').valueAsDate = new Date();
 </script>
+<div style="position:fixed; bottom:6px; right:8px; font-size:10px; color:#B0B7C3; background:rgba(255,255,255,0.7); padding:2px 6px; border-radius:6px; z-index:9999;">build v2026-07-15-c</div>
 </body>
 </html>
