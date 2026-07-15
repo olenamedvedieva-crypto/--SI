@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Mystery Shopper Delivery",
+  "schemaVersion": 1,
+  "description": "Проект «Тайный гость» для службы доставки: цели, правила, форма оценки, статистика и дашборд",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Таємний гість — Служба доставки</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --primary: #4F46E5;
+    --primary-light: #EEF2FF;
+    --primary-dark: #3730A3;
+    --cyan: #0891B2;
+    --success: #059669;
+    --warning: #D97706;
+    --danger: #DC2626;
+    --purple: #7C3AED;
+    --bg: #F1F5F9;
+    --surface: #FFFFFF;
+    --surface-2: #F8FAFC;
+    --border: #E2E8F0;
+    --text-1: #0F172A;
+    --text-2: #475569;
+    --text-3: #94A3B8;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text-1);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #4F46E5 0%, #0891B2 100%);
+    color: white;
+    padding: 40px 24px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 100px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: clamp(24px, 5vw, 36px);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .header p {
+    font-size: 15px;
+    opacity: 0.85;
+  }
+
+  /* ── TABS ── */
+  .tabs-wrap {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow);
+  }
+  .tabs {
+    display: flex;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 16px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-2);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--primary); }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 600;
+  }
+  .tab-icon { font-size: 16px; }
+
+  /* ── LAYOUT ── */
+  .main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 28px 16px 60px;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-1);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-title .icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: #EEF2FF; }
+  .icon-cyan { background: #ECFEFF; }
+  .icon-green { background: #ECFDF5; }
+  .icon-orange { background: #FFF7ED; }
+  .icon-purple { background: #F5F3FF; }
+  .icon-red { background: #FEF2F2; }
+
+  /* ── GOAL LIST ── */
+  .goal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .goal-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    border-left: 3px solid var(--primary);
+  }
+  .goal-card h4 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--primary);
+    margin-bottom: 8px;
+  }
+  .goal-card p {
+    font-size: 13.5px;
+    color: var(--text-2);
+    line-height: 1.55;
+  }
+
+  /* ── KPI ROW ── */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 16px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+    margin-bottom: 8px;
+  }
+  .kpi-value {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--text-1);
+    line-height: 1;
+  }
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-top: 4px;
+  }
+
+  /* ── RULES ── */
+  .rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .rule-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .rule-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .rule-text strong {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .rule-text span {
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .caution-box {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #FFF7ED;
+    border: 1px solid #FED7AA;
+    border-radius: 10px;
+    margin-top: 16px;
+  }
+  .caution-box .icon { font-size: 20px; flex-shrink: 0; }
+  .caution-box p { font-size: 13px; color: #92400E; }
+  .caution-box strong { color: #78350F; }
+
+  /* ── FORM ── */
+  .section-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 12px;
+    border-radius: 100px;
+    background: var(--primary-light);
+    color: var(--primary);
+    margin-bottom: 12px;
+  }
+  .form-section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-1);
+    margin-bottom: 4px;
+  }
+  .form-section-sub {
+    font-size: 12.5px;
+    color: var(--text-3);
+    margin-bottom: 20px;
+  }
+  .form-group { margin-bottom: 20px; }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: 6px;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-1);
+    background: var(--surface);
+    transition: border-color 0.2s;
+    font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.08);
+  }
+  .form-textarea { resize: vertical; min-height: 80px; }
+
+  /* Star Rating */
+  .rating-field { margin-bottom: 18px; }
+  .rating-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .rating-desc {
+    font-size: 11.5px;
+    color: var(--text-3);
+    font-weight: 400;
+  }
+  .stars {
+    display: flex;
+    gap: 4px;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+  }
+  .stars input { display: none; }
+  .stars label {
+    cursor: pointer;
+    font-size: 28px;
+    color: #CBD5E1;
+    transition: color 0.15s, transform 0.1s;
+    line-height: 1;
+    user-select: none;
+  }
+  .stars label:hover,
+  .stars label:hover ~ label,
+  .stars input:checked ~ label {
+    color: #F59E0B;
+  }
+  .stars label:hover { transform: scale(1.15); }
+
+  /* Yes/No */
+  .yesno-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .yesno-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+    background: var(--surface);
+  }
+  .yesno-label input { display: none; }
+  .yesno-label:has(input:checked).yes { border-color: var(--success); background: #ECFDF5; color: var(--success); }
+  .yesno-label:has(input:checked).no { border-color: var(--danger); background: #FEF2F2; color: var(--danger); }
+  .yesno-label:hover { border-color: var(--primary); }
+
+  /* NPS */
+  .nps-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .nps-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text-2);
+  }
+  .nps-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .nps-btn.selected { background: var(--primary); border-color: var(--primary); color: white; }
+  .nps-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-3);
+    margin-top: 6px;
+  }
+  .nps-input { display: none; }
+
+  /* Submit */
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 8px;
+    letter-spacing: 0.01em;
+  }
+  .submit-btn:hover { background: var(--primary-dark); }
+  .submit-btn:active { transform: scale(0.99); }
+
+  .score-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--primary-light);
+    border: 1px solid #C7D2FE;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .score-preview-label { font-size: 13px; color: var(--primary); font-weight: 600; }
+  .score-preview-value { font-size: 28px; font-weight: 800; color: var(--primary); }
+
+  /* Toast */
+  .toast {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--text-1);
+    color: white;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    z-index: 999;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── CHARTS ── */
+  .chart-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 640px) { .chart-grid-2 { grid-template-columns: 1fr; } }
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* ── TABLE ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th {
+    background: var(--surface-2);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-3);
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-2);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--surface-2); }
+  .score-chip {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .chip-high { background: #ECFDF5; color: #059669; }
+  .chip-mid { background: #FFFBEB; color: #D97706; }
+  .chip-low { background: #FEF2F2; color: #DC2626; }
+
+  /* ── MISC ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+  .section-header { margin-bottom: 20px; }
+  .section-header h2 {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+  .section-header p {
+    font-size: 14px;
+    color: var(--text-2);
+    margin-top: 4px;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-3);
+    font-size: 14px;
+  }
+  .empty-state div { font-size: 36px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-badge">🕵️ Контроль якості</div>
+  <h1>Проєкт «Таємний гість»</h1>
+  <p>Служба доставки · Програма незалежної оцінки сервісу</p>
+</div>
+
+<!-- TABS -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="about">
+      <span class="tab-icon">🎯</span> Про проєкт
+    </button>
+    <button class="tab-btn" data-tab="rules">
+      <span class="tab-icon">📋</span> Правила
+    </button>
+    <button class="tab-btn" data-tab="form">
+      <span class="tab-icon">📝</span> Форма оцінки
+    </button>
+    <button class="tab-btn" data-tab="stats">
+      <span class="tab-icon">📊</span> Статистика
+    </button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ══════════════ ПРО ПРОЄКТ ══════════════ -->
+  <div id="about" class="tab-content active">
+    <div class="section-header">
+      <h2>Цілі проєкту</h2>
+      <p>Незалежна оцінка якості сервісу очима реального клієнта</p>
+    </div>
+
+    <div class="goal-grid">
+      <div class="goal-card">
+        <h4>🎯 Головна мета</h4>
+        <p>Отримати об'єктивну оцінку якості обслуговування на кожному етапі взаємодії з клієнтом — від оформлення замовлення до вручення посилки.</p>
+      </div>
+      <div class="goal-card" style="border-left-color: var(--cyan);">
+        <h4>🔍 Виявлення слабких місць</h4>
+        <p>Знайти системні порушення стандартів сервісу, які впливають на задоволеність клієнтів та їх повернення.</p>
+      </div>
+      <div class="goal-card" style="border-left-color: var(--success);">
+        <h4>📈 Підвищення стандартів</h4>
+        <p>Формувати базу даних для коригування регламентів, навчання співробітників та впровадження найкращих практик обслуговування.</p>
+      </div>
+      <div class="goal-card" style="border-left-color: var(--warning);">
+        <h4>⚡ Мотивація команди</h4>
+        <p>Створити систему справедливої оцінки та визнання високих результатів — заохочувати кращих, розвивати тих, хто відстає.</p>
+      </div>
+      <div class="goal-card" style="border-left-color: var(--purple);">
+        <h4>📊 Аналітика та тренди</h4>
+        <p>Відстежувати динаміку якості за регіонами, змінами та сезонами для стратегічного управління сервісом.</p>
+      </div>
+      <div class="goal-card" style="border-left-color: var(--danger);">
+        <h4>💬 Голос клієнта</h4>
+        <p>Зафіксувати реальний клієнтський досвід та NPS для розуміння лояльності та готовності рекомендувати сервіс.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon icon-blue">📌</div>
+        Зони оцінки та вага критеріїв
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+        <div style="text-align:center; padding: 16px; background: var(--surface-2); border-radius: 10px; border: 1px solid var(--border);">
+          <div style="font-size: 26px; font-weight: 800; color: var(--primary);">25%</div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-2); margin-top: 4px;">Оформлення замовлення</div>
+        </div>
+        <div style="text-align:center; padding: 16px; background: var(--surface-2); border-radius: 10px; border: 1px solid var(--border);">
+          <div style="font-size: 26px; font-weight: 800; color: var(--cyan);">35%</div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-2); margin-top: 4px;">Доставка та кур'єр</div>
+        </div>
+        <div style="text-align:center; padding: 16px; background: var(--surface-2); border-radius: 10px; border: 1px solid var(--border);">
+          <div style="font-size: 26px; font-weight: 800; color: var(--success);">35%</div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-2); margin-top: 4px;">Пакування та товар</div>
+        </div>
+        <div style="text-align:center; padding: 16px; background: var(--surface-2); border-radius: 10px; border: 1px solid var(--border);">
+          <div style="font-size: 26px; font-weight: 800; color: var(--warning);">5%</div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-2); margin-top: 4px;">Взаємодія</div>
+        </div>
+      </div>
+      <div style="margin-top: 16px; padding: 14px; background: var(--primary-light); border-radius: 10px; font-size: 13px; color: var(--primary);">
+        <strong>Підсумкова оцінка:</strong> зважена сума балів за всіма блоками + окремо фіксується NPS (індекс лояльності клієнта).
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ ПРАВИЛА ══════════════ -->
+  <div id="rules" class="tab-content">
+    <div class="section-header">
+      <h2>Правила участі</h2>
+      <p>Обов'язкові вимоги до таємного гостя для забезпечення об'єктивності</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon icon-blue">🕵️</div>
+        Вимоги до таємного гостя
+      </div>
+      <div class="rules-list">
+        <div class="rule-item">
+          <div class="rule-num">1</div>
+          <div class="rule-text">
+            <strong>Повна конфіденційність</strong>
+            <span>Не можна розкривати свою роль таємного гостя до, під час і після візиту. Співробітники не повинні підозрювати про перевірку, що проводиться.</span>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">2</div>
+          <div class="rule-text">
+            <strong>Реальне замовлення</strong>
+            <span>Необхідно оформити справжнє замовлення через офіційний канал (застосунок, сайт або телефон). Фіктивні замовлення не допускаються.</span>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">3</div>
+          <div class="rule-text">
+            <strong>Поведінка як звичайний клієнт</strong>
+            <span>Не ставити провокаційних питань, не створювати штучних ситуацій. Поводитися так, як поводиться типовий покупець.</span>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">4</div>
+          <div class="rule-text">
+            <strong>Негайна фіксація</strong>
+            <span>Заповнювати форму оцінки одразу після отримання замовлення — не пізніше 2 годин. Деталі пам'яті швидко стираються.</span>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">5</div>
+          <div class="rule-text">
+            <strong>Об'єктивність</strong>
+            <span>Оцінювати факти, а не особисті симпатії. Використовувати критерії оцінки суворо відповідно до інструкції. Уникати впливу настрою.</span>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">6</div>
+          <div class="rule-text">
+            <strong>Документування</strong>
+            <span>Зберігати чек, скриншоти листування та трекінгу доставки. За потреби — робити фото пакування. Докази можуть знадобитися.</span>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">7</div>
+          <div class="rule-text">
+            <strong>Один візит — одна форма</strong>
+            <span>Кожне замовлення оформлюється окремою формою оцінки. Об'єднання кількох візитів в одну анкету не допускається.</span>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">8</div>
+          <div class="rule-text">
+            <strong>Незалежність</strong>
+            <span>Таємний гість не повинен мати особистих стосунків зі співробітниками підрозділу, що перевіряється, або конфлікту інтересів.</span>
+          </div>
+        </div>
+      </div>
+      <div class="caution-box">
+        <div class="icon">⚠️</div>
+        <p><strong>Важливо:</strong> Навмисне спотворення оцінок, фальсифікація або розкриття персональних даних співробітників є порушенням і тягне за собою відсторонення від програми.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon icon-green">✅</div>
+        Шкала оцінок
+      </div>
+      <div style="display:flex; flex-direction:column; gap: 10px;">
+        <div style="display:grid; grid-template-columns: auto 1fr; gap: 12px; align-items:center; padding: 12px 16px; background:#ECFDF5; border-radius:8px; border:1px solid #A7F3D0;">
+          <div style="font-size:18px; white-space:nowrap;">★★★★★</div>
+          <div><strong style="color:#059669;">5 — Відмінно</strong> — <span style="font-size:12px;color:#065F46;">Перевищує очікування. Винятковий рівень сервісу.</span></div>
+        </div>
+        <div style="display:grid; grid-template-columns: auto 1fr; gap: 12px; align-items:center; padding: 12px 16px; background:#F0FDF4; border-radius:8px; border:1px solid #BBF7D0;">
+          <div style="font-size:18px; white-space:nowrap;">★★★★☆</div>
+          <div><strong style="color:#16A34A;">4 — Добре</strong> — <span style="font-size:12px;color:#166534;">Відповідає стандартам. Незначні зауваження.</span></div>
+        </div>
+        <div style="display:grid; grid-template-columns: auto 1fr; gap: 12px; align-items:center; padding: 12px 16px; background:#FFFBEB; border-radius:8px; border:1px solid #FDE68A;">
+          <div style="font-size:18px; white-space:nowrap;">★★★☆☆</div>
+          <div><strong style="color:#D97706;">3 — Задовільно</strong> — <span style="font-size:12px;color:#92400E;">Часткова відповідність стандартам. Потребує поліпшення.</span></div>
+        </div>
+        <div style="display:grid; grid-template-columns: auto 1fr; gap: 12px; align-items:center; padding: 12px 16px; background:#FFF7ED; border-radius:8px; border:1px solid #FDBA74;">
+          <div style="font-size:18px; white-space:nowrap;">★★☆☆☆</div>
+          <div><strong style="color:#EA580C;">2 — Погано</strong> — <span style="font-size:12px;color:#9A3412;">Серйозні порушення стандартів. Потрібне термінове втручання.</span></div>
+        </div>
+        <div style="display:grid; grid-template-columns: auto 1fr; gap: 12px; align-items:center; padding: 12px 16px; background:#FEF2F2; border-radius:8px; border:1px solid #FECACA;">
+          <div style="font-size:18px; white-space:nowrap;">★☆☆☆☆</div>
+          <div><strong style="color:#DC2626;">1 — Критично</strong> — <span style="font-size:12px;color:#7F1D1D;">Груба порушення. Негайне розслідування є обов'язковим.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ ФОРМА ══════════════ -->
+  <div id="form" class="tab-content">
+    <div class="section-header">
+      <h2>Форма оцінки</h2>
+      <p>Заповнюйте одразу після отримання замовлення — не пізніше 2 годин</p>
+    </div>
+
+    <div class="card" style="background: var(--primary-light); border-color: #C7D2FE;">
+      <div class="card-title" style="margin-bottom:12px;">
+        <div class="icon icon-blue">🕵️</div>
+        Пам'ятка таємному гостю перед заповненням
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px; font-size:13px; color:var(--text-2);">
+        <div style="display:flex; gap:10px;"><span>🤫</span><span><strong>Конфіденційність.</strong> Не розкривайте роль таємного гостя до, під час і після візиту.</span></div>
+        <div style="display:flex; gap:10px;"><span>🛍️</span><span><strong>Реальне замовлення.</strong> Оформлюйте справжнє замовлення через офіційний канал — жодних фіктивних візитів.</span></div>
+        <div style="display:flex; gap:10px;"><span>⏱️</span><span><strong>Не пізніше 2 годин.</strong> Заповнюйте форму одразу після отримання, поки деталі свіжі в пам'яті.</span></div>
+        <div style="display:flex; gap:10px;"><span>📎</span><span><strong>Докази обов'язкові.</strong> Зберігайте чек, фото пакування/вмісту та відео вручення — без них форму не буде прийнято.</span></div>
+        <div style="display:flex; gap:10px;"><span>📝</span><span><strong>Один візит — одна форма.</strong> Оцінюйте факти об'єктивно, без впливу настрою чи особистих симпатій.</span></div>
+      </div>
+      <div style="margin-top:12px; font-size:12px; color:var(--primary);">Повний список правил — у вкладці «📋 Правила».</div>
+    </div>
+
+    <form id="evalForm">
+
+      <!-- БЛОК 0 -->
+      <div class="card">
+        <div class="section-badge">📋 Блок 0</div>
+        <div class="form-section-title">Загальні відомості про перевірку</div>
+        <div class="form-section-sub">Ідентифікаційні дані візиту</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Дата перевірки *</label>
+            <input type="date" class="form-input" id="checkDate" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Час отримання замовлення *</label>
+            <input type="time" class="form-input" id="checkTime" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Номер телефону отримувача *</label>
+            <input type="tel" class="form-input" id="orderId" placeholder="Напр. +380 67 123 45 67" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Країна *</label>
+            <select class="form-select" id="country" required>
+              <option value="">— Оберіть країну —</option>
+              <option value="Україна">🇺🇦 Україна</option>
+              <option value="Польща">🇵🇱 Польща</option>
+              <option value="Грузія">🇬🇪 Грузія</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Місто *</label>
+            <select class="form-select" id="city" required disabled>
+              <option value="">— Спочатку оберіть країну —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Адреса / Концепція *</label>
+            <select class="form-select" id="location" required disabled>
+              <option value="">— Спочатку оберіть місто —</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Канал оформлення замовлення</label>
+            <select class="form-select" id="channel">
+              <option value="">— Оберіть —</option>
+              <option>Мобільний застосунок</option>
+              <option>Сайт</option>
+              <option>Телефон</option>
+              <option>Месенджер</option>
+              <option>На локації</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Тип доставки</label>
+            <select class="form-select" id="deliveryType">
+              <option value="">— Оберіть —</option>
+              <option>Кур'єрська доставка</option>
+              <option>Самовивіз</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ПІБ таємного гостя</label>
+          <input type="text" class="form-input" id="guestName" placeholder="Ім'я Прізвище (тільки для внутрішнього використання)">
+        </div>
+      </div>
+
+      <!-- БЛОК 1 -->
+      <div class="card">
+        <div class="section-badge" style="background:#ECFEFF; color:var(--cyan);">🛒 Блок 1 · 25%</div>
+        <div class="form-section-title">Оформлення замовлення</div>
+        <div class="form-section-sub" id="b1SectionSub">Оцініть процес оформлення та зручність платформи</div>
+
+        <div id="b1-variant-default">
+          <div class="rating-field">
+            <div class="rating-label">
+              Зручність інтерфейсу / застосунку
+              <span class="rating-desc">навігація, пошук, зрозумілість</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_interface" id="b1_i5" value="5"><label for="b1_i5">★</label>
+              <input type="radio" name="b1_interface" id="b1_i4" value="4"><label for="b1_i4">★</label>
+              <input type="radio" name="b1_interface" id="b1_i3" value="3"><label for="b1_i3">★</label>
+              <input type="radio" name="b1_interface" id="b1_i2" value="2"><label for="b1_i2">★</label>
+              <input type="radio" name="b1_interface" id="b1_i1" value="1"><label for="b1_i1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Повнота інформації про товари / послуги
+              <span class="rating-desc">опис, фото, склад, ціна</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_info" id="b1_inf5" value="5"><label for="b1_inf5">★</label>
+              <input type="radio" name="b1_info" id="b1_inf4" value="4"><label for="b1_inf4">★</label>
+              <input type="radio" name="b1_info" id="b1_inf3" value="3"><label for="b1_inf3">★</label>
+              <input type="radio" name="b1_info" id="b1_inf2" value="2"><label for="b1_inf2">★</label>
+              <input type="radio" name="b1_info" id="b1_inf1" value="1"><label for="b1_inf1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Швидкість підтвердження замовлення
+              <span class="rating-desc">час очікування сповіщення</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_confirm" id="b1_c5" value="5"><label for="b1_c5">★</label>
+              <input type="radio" name="b1_confirm" id="b1_c4" value="4"><label for="b1_c4">★</label>
+              <input type="radio" name="b1_confirm" id="b1_c3" value="3"><label for="b1_c3">★</label>
+              <input type="radio" name="b1_confirm" id="b1_c2" value="2"><label for="b1_c2">★</label>
+              <input type="radio" name="b1_confirm" id="b1_c1" value="1"><label for="b1_c1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Зручність відстеження замовлення
+              <span class="rating-desc">трекінг, сповіщення про статус</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_tracking" id="b1_t5" value="5"><label for="b1_t5">★</label>
+              <input type="radio" name="b1_tracking" id="b1_t4" value="4"><label for="b1_t4">★</label>
+              <input type="radio" name="b1_tracking" id="b1_t3" value="3"><label for="b1_t3">★</label>
+              <input type="radio" name="b1_tracking" id="b1_t2" value="2"><label for="b1_t2">★</label>
+              <input type="radio" name="b1_tracking" id="b1_t1" value="1"><label for="b1_t1">★</label>
+            </div>
+          </div>
+        </div>
+
+        <div id="b1-variant-phone" style="display:none;">
+          <div class="rating-field">
+            <div class="rating-label">
+              Швидкість з'єднання з оператором
+              <span class="rating-desc">час очікування на лінії, кількість спроб додзвону</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_p_speed" id="b1_ps5" value="5"><label for="b1_ps5">★</label>
+              <input type="radio" name="b1_p_speed" id="b1_ps4" value="4"><label for="b1_ps4">★</label>
+              <input type="radio" name="b1_p_speed" id="b1_ps3" value="3"><label for="b1_ps3">★</label>
+              <input type="radio" name="b1_p_speed" id="b1_ps2" value="2"><label for="b1_ps2">★</label>
+              <input type="radio" name="b1_p_speed" id="b1_ps1" value="1"><label for="b1_ps1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Ввічливість і тон спілкування оператора
+              <span class="rating-desc">привітання, доброзичливість, грамотна мова</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_p_manner" id="b1_pm5" value="5"><label for="b1_pm5">★</label>
+              <input type="radio" name="b1_p_manner" id="b1_pm4" value="4"><label for="b1_pm4">★</label>
+              <input type="radio" name="b1_p_manner" id="b1_pm3" value="3"><label for="b1_pm3">★</label>
+              <input type="radio" name="b1_p_manner" id="b1_pm2" value="2"><label for="b1_pm2">★</label>
+              <input type="radio" name="b1_p_manner" id="b1_pm1" value="1"><label for="b1_pm1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Повнота консультації
+              <span class="rating-desc">товар/послуга, ціна, склад, строки доставки — без необхідності перепитувати</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_p_info" id="b1_pi5" value="5"><label for="b1_pi5">★</label>
+              <input type="radio" name="b1_p_info" id="b1_pi4" value="4"><label for="b1_pi4">★</label>
+              <input type="radio" name="b1_p_info" id="b1_pi3" value="3"><label for="b1_pi3">★</label>
+              <input type="radio" name="b1_p_info" id="b1_pi2" value="2"><label for="b1_pi2">★</label>
+              <input type="radio" name="b1_p_info" id="b1_pi1" value="1"><label for="b1_pi1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Компетентність при оформленні замовлення
+              <span class="rating-desc">правильно зафіксовано адресу, позиції, спосіб оплати; підтвердив деталі</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_p_order" id="b1_po5" value="5"><label for="b1_po5">★</label>
+              <input type="radio" name="b1_p_order" id="b1_po4" value="4"><label for="b1_po4">★</label>
+              <input type="radio" name="b1_p_order" id="b1_po3" value="3"><label for="b1_po3">★</label>
+              <input type="radio" name="b1_p_order" id="b1_po2" value="2"><label for="b1_po2">★</label>
+              <input type="radio" name="b1_p_order" id="b1_po1" value="1"><label for="b1_po1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Пропозиція додаткових товарів / послуг
+              <span class="rating-desc">чи запропонував оператор апсейл — супутні товари, акції, більший обсяг замовлення</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_p_upsell" id="b1_pu5" value="5"><label for="b1_pu5">★</label>
+              <input type="radio" name="b1_p_upsell" id="b1_pu4" value="4"><label for="b1_pu4">★</label>
+              <input type="radio" name="b1_p_upsell" id="b1_pu3" value="3"><label for="b1_pu3">★</label>
+              <input type="radio" name="b1_p_upsell" id="b1_pu2" value="2"><label for="b1_pu2">★</label>
+              <input type="radio" name="b1_p_upsell" id="b1_pu1" value="1"><label for="b1_pu1">★</label>
+            </div>
+          </div>
+        </div>
+
+        <div id="b1-variant-onsite" style="display:none;">
+          <div class="rating-field">
+            <div class="rating-label">
+              Чистота та охайність локації
+              <span class="rating-desc">вигляд торгової точки/каси, охайність робочого місця та вітрини</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_o_clean" id="b1_oc5" value="5"><label for="b1_oc5">★</label>
+              <input type="radio" name="b1_o_clean" id="b1_oc4" value="4"><label for="b1_oc4">★</label>
+              <input type="radio" name="b1_o_clean" id="b1_oc3" value="3"><label for="b1_oc3">★</label>
+              <input type="radio" name="b1_o_clean" id="b1_oc2" value="2"><label for="b1_oc2">★</label>
+              <input type="radio" name="b1_o_clean" id="b1_oc1" value="1"><label for="b1_oc1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Ввічливість і привітність працівника
+              <span class="rating-desc">привітання, доброзичливість, охайний вигляд персоналу</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_o_manner" id="b1_om5" value="5"><label for="b1_om5">★</label>
+              <input type="radio" name="b1_o_manner" id="b1_om4" value="4"><label for="b1_om4">★</label>
+              <input type="radio" name="b1_o_manner" id="b1_om3" value="3"><label for="b1_om3">★</label>
+              <input type="radio" name="b1_o_manner" id="b1_om2" value="2"><label for="b1_om2">★</label>
+              <input type="radio" name="b1_o_manner" id="b1_om1" value="1"><label for="b1_om1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Повнота консультації
+              <span class="rating-desc">товар/послуга, ціна, склад, акції — без необхідності перепитувати</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_o_info" id="b1_oi5" value="5"><label for="b1_oi5">★</label>
+              <input type="radio" name="b1_o_info" id="b1_oi4" value="4"><label for="b1_oi4">★</label>
+              <input type="radio" name="b1_o_info" id="b1_oi3" value="3"><label for="b1_oi3">★</label>
+              <input type="radio" name="b1_o_info" id="b1_oi2" value="2"><label for="b1_oi2">★</label>
+              <input type="radio" name="b1_o_info" id="b1_oi1" value="1"><label for="b1_oi1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Точність оформлення замовлення
+              <span class="rating-desc">правильно зафіксовано позиції, побажання, спосіб оплати</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_o_order" id="b1_oo5" value="5"><label for="b1_oo5">★</label>
+              <input type="radio" name="b1_o_order" id="b1_oo4" value="4"><label for="b1_oo4">★</label>
+              <input type="radio" name="b1_o_order" id="b1_oo3" value="3"><label for="b1_oo3">★</label>
+              <input type="radio" name="b1_o_order" id="b1_oo2" value="2"><label for="b1_oo2">★</label>
+              <input type="radio" name="b1_o_order" id="b1_oo1" value="1"><label for="b1_oo1">★</label>
+            </div>
+          </div>
+
+          <div class="rating-field">
+            <div class="rating-label">
+              Пропозиція додаткових товарів / послуг
+              <span class="rating-desc">чи запропонував працівник апсейл — супутні товари, акції, більший обсяг замовлення</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_o_upsell" id="b1_ou5" value="5"><label for="b1_ou5">★</label>
+              <input type="radio" name="b1_o_upsell" id="b1_ou4" value="4"><label for="b1_ou4">★</label>
+              <input type="radio" name="b1_o_upsell" id="b1_ou3" value="3"><label for="b1_ou3">★</label>
+              <input type="radio" name="b1_o_upsell" id="b1_ou2" value="2"><label for="b1_ou2">★</label>
+              <input type="radio" name="b1_o_upsell" id="b1_ou1" value="1"><label for="b1_ou1">★</label>
+            </div>
+          </div>
+        </div>
+
+        <div id="b1-pickup-time" style="display:none;">
+          <div class="rating-field">
+            <div class="rating-label">
+              Час очікування готовності замовлення
+              <span class="rating-desc">від оформлення до моменту, коли замовлення готове забрати на самовивіз</span>
+            </div>
+            <div class="stars">
+              <input type="radio" name="b1_pickup_time" id="b1_pt5" value="5"><label for="b1_pt5">★</label>
+              <input type="radio" name="b1_pickup_time" id="b1_pt4" value="4"><label for="b1_pt4">★</label>
+              <input type="radio" name="b1_pickup_time" id="b1_pt3" value="3"><label for="b1_pt3">★</label>
+              <input type="radio" name="b1_pickup_time" id="b1_pt2" value="2"><label for="b1_pt2">★</label>
+              <input type="radio" name="b1_pickup_time" id="b1_pt1" value="1"><label for="b1_pt1">★</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Коментар до блоку</label>
+          <textarea class="form-textarea" id="b1_comment" placeholder="Що саме сподобалось або спричинило труднощі при оформленні?"></textarea>
+        </div>
+      </div>
+
+      <!-- БЛОК 2 -->
+      <div class="card" id="block2Card">
+        <div class="section-badge" style="background:#F5F3FF; color:var(--purple);">🚴 Блок 2 · 35%</div>
+        <div class="form-section-title">Доставка та кур'єр</div>
+        <div class="form-section-sub">Оцініть роботу кур'єра та відповідність стандартам</div>
+
+        <div id="block2Content">
+        <div class="rating-field">
+          <div class="rating-label">
+            Відповідність часу доставки заявленому
+            <span class="rating-desc">пунктуальність, попередження про затримку</span>
+          </div>
+          <div class="stars">
+            <input type="radio" name="b2_time" id="b2_t5" value="5"><label for="b2_t5">★</label>
+            <input type="radio" name="b2_time" id="b2_t4" value="4"><label for="b2_t4">★</label>
+            <input type="radio" name="b2_time" id="b2_t3" value="3"><label for="b2_t3">★</label>
+            <input type="radio" name="b2_time" id="b2_t2" value="2"><label for="b2_t2">★</label>
+            <input type="radio" name="b2_time" id="b2_t1" value="1"><label for="b2_t1">★</label>
+          </div>
+        </div>
+
+        <div class="rating-field">
+          <div class="rating-label">
+            Зовнішній вигляд кур'єра
+            <span class="rating-desc">форма, охайність, бейдж, дрес-код</span>
+          </div>
+          <div class="stars">
+            <input type="radio" name="b2_appearance" id="b2_a5" value="5"><label for="b2_a5">★</label>
+            <input type="radio" name="b2_appearance" id="b2_a4" value="4"><label for="b2_a4">★</label>
+            <input type="radio" name="b2_appearance" id="b2_a3" value="3"><label for="b2_a3">★</label>
+            <input type="radio" name="b2_appearance" id="b2_a2" value="2"><label for="b2_a2">★</label>
+            <input type="radio" name="b2_appearance" id="b2_a1" value="1"><label for="b2_a1">★</label>
+          </div>
+        </div>
+
+        <div class="rating-field">
+          <div class="rating-label">
+            Ввічливість та привітання
+            <span class="rating-desc">привітання, посмішка, доброзичливість, прощання</span>
+          </div>
+          <div class="stars">
+            <input type="radio" name="b2_politeness" id="b2_p5" value="5"><label for="b2_p5">★</label>
+            <input type="radio" name="b2_politeness" id="b2_p4" value="4"><label for="b2_p4">★</label>
+            <input type="radio" name="b2_politeness" id="b2_p3" value="3"><label for="b2_p3">★</label>
+            <input type="radio" name="b2_politeness" id="b2_p2" value="2"><label for="b2_p2">★</label>
+            <input type="radio" name="b2_politeness" id="b2_p1" value="1"><label for="b2_p1">★</label>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="form-group">
+          <label class="form-label">Кур'єр назвав ім'я клієнта при врученні?</label>
+          <div class="yesno-group">
+            <label class="yesno-label yes"><input type="radio" name="b2_named" value="yes"> ✅ Так</label>
+            <label class="yesno-label no"><input type="radio" name="b2_named" value="no"> ❌ Ні</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Кур'єр запропонував перевірити вміст замовлення?</label>
+          <div class="yesno-group">
+            <label class="yesno-label yes"><input type="radio" name="b2_offered_check" value="yes"> ✅ Так</label>
+            <label class="yesno-label no"><input type="radio" name="b2_offered_check" value="no"> ❌ Ні</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Кур'єр уточнив місце / спосіб передачі замовлення?</label>
+          <div class="yesno-group">
+            <label class="yesno-label yes"><input type="radio" name="b2_clarified" value="yes"> ✅ Так</label>
+            <label class="yesno-label no"><input type="radio" name="b2_clarified" value="no"> ❌ Ні</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Коментар до блоку</label>
+          <textarea class="form-textarea" id="b2_comment" placeholder="Опис зовнішнього вигляду, конкретні фрази кур'єра, інциденти..."></textarea>
+        </div>
+        </div>
+
+        <div id="block2NotApplicable" style="display:none; padding:16px; background:var(--surface-2); border:1px dashed var(--border); border-radius:10px; font-size:13px; color:var(--text-2);">
+          🚫 Не оцінюється — обрано «Самовивіз», кур'єр не задіяний.
+        </div>
+      </div>
+
+      <!-- БЛОК 3 -->
+      <div class="card">
+        <div class="section-badge" style="background:#ECFDF5; color:var(--success);">📦 Блок 3 · 35%</div>
+        <div class="form-section-title">Пакування та товар</div>
+        <div class="form-section-sub">Оцініть стан пакування та відповідність замовлення</div>
+
+        <div class="rating-field">
+          <div class="rating-label">
+            Стан пакування при отриманні
+            <span class="rating-desc">цілісність, чистота, герметичність</span>
+          </div>
+          <div class="stars">
+            <input type="radio" name="b3_packaging" id="b3_p5" value="5"><label for="b3_p5">★</label>
+            <input type="radio" name="b3_packaging" id="b3_p4" value="4"><label for="b3_p4">★</label>
+            <input type="radio" name="b3_packaging" id="b3_p3" value="3"><label for="b3_p3">★</label>
+            <input type="radio" name="b3_packaging" id="b3_p2" value="2"><label for="b3_p2">★</label>
+            <input type="radio" name="b3_packaging" id="b3_p1" value="1"><label for="b3_p1">★</label>
+          </div>
+        </div>
+
+        <div class="rating-field">
+          <div class="rating-label">
+            Комплектність замовлення
+            <span class="rating-desc">усі позиції наявні, нічого зайвого</span>
+          </div>
+          <div class="stars">
+            <input type="radio" name="b3_completeness" id="b3_c5" value="5"><label for="b3_c5">★</label>
+            <input type="radio" name="b3_completeness" id="b3_c4" value="4"><label for="b3_c4">★</label>
+            <input type="radio" name="b3_completeness" id="b3_c3" value="3"><label for="b3_c3">★</label>
+            <input type="radio" name="b3_completeness" id="b3_c2" value="2"><label for="b3_c2">★</label>
+            <input type="radio" name="b3_completeness" id="b3_c1" value="1"><label for="b3_c1">★</label>
+          </div>
+        </div>
+
+        <div class="rating-field">
+          <div class="rating-label">
+            Збереженість / якість товару
+            <span class="rating-desc">без пошкоджень, правильна температура, термін придатності</span>
+          </div>
+          <div class="stars">
+            <input type="radio" name="b3_quality" id="b3_q5" value="5"><label for="b3_q5">★</label>
+            <input type="radio" name="b3_quality" id="b3_q4" value="4"><label for="b3_q4">★</label>
+            <input type="radio" name="b3_quality" id="b3_q3" value="3"><label for="b3_q3">★</label>
+            <input type="radio" name="b3_quality" id="b3_q2" value="2"><label for="b3_q2">★</label>
+            <input type="radio" name="b3_quality" id="b3_q1" value="1"><label for="b3_q1">★</label>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="form-group">
+          <label class="form-label">Усі позиції замовлення наявні?</label>
+          <div class="yesno-group">
+            <label class="yesno-label yes"><input type="radio" name="b3_all_items" value="yes"> ✅ Так</label>
+            <label class="yesno-label no"><input type="radio" name="b3_all_items" value="no"> ❌ Ні</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Коментар до блоку</label>
+          <textarea class="form-textarea" id="b3_comment" placeholder="Опишіть стан пакування, нестачу, заміни, дефекти товару..."></textarea>
+        </div>
+      </div>
+
+      <!-- БЛОК 4 -->
+      <div class="card">
+        <div class="section-badge" style="background:#FFF7ED; color:var(--warning);">💬 Блок 4 · 5%</div>
+        <div class="form-section-title">Взаємодія</div>
+        <div class="form-section-sub">Оцініть процес оплати та документообіг</div>
+
+        <div class="rating-field">
+          <div class="rating-label">
+            Робота термінала / процес оплати
+            <span class="rating-desc">швидкість, коректність, пропозиція способів оплати</span>
+          </div>
+          <div class="stars">
+            <input type="radio" name="b4_payment" id="b4_pay5" value="5"><label for="b4_pay5">★</label>
+            <input type="radio" name="b4_payment" id="b4_pay4" value="4"><label for="b4_pay4">★</label>
+            <input type="radio" name="b4_payment" id="b4_pay3" value="3"><label for="b4_pay3">★</label>
+            <input type="radio" name="b4_payment" id="b4_pay2" value="2"><label for="b4_pay2">★</label>
+            <input type="radio" name="b4_payment" id="b4_pay1" value="1"><label for="b4_pay1">★</label>
+          </div>
+        </div>
+
+        <div class="rating-field">
+          <div class="rating-label">
+            Надання чека
+            <span class="rating-desc">фіскальний чек</span>
+          </div>
+          <div class="stars">
+            <input type="radio" name="b4_receipt" id="b4_r5" value="5"><label for="b4_r5">★</label>
+            <input type="radio" name="b4_receipt" id="b4_r4" value="4"><label for="b4_r4">★</label>
+            <input type="radio" name="b4_receipt" id="b4_r3" value="3"><label for="b4_r3">★</label>
+            <input type="radio" name="b4_receipt" id="b4_r2" value="2"><label for="b4_r2">★</label>
+            <input type="radio" name="b4_receipt" id="b4_r1" value="1"><label for="b4_r1">★</label>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="form-group">
+          <label class="form-label">Чек / підтвердження оплати надано?</label>
+          <div class="yesno-group">
+            <label class="yesno-label yes"><input type="radio" name="b4_receipt_given" value="yes"> ✅ Так</label>
+            <label class="yesno-label no"><input type="radio" name="b4_receipt_given" value="no"> ❌ Ні</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Видача решти (якщо вона мала бути)?</label>
+          <div class="yesno-group">
+            <label class="yesno-label yes"><input type="radio" name="b4_change_given" value="yes"> ✅ Так</label>
+            <label class="yesno-label no"><input type="radio" name="b4_change_given" value="no"> ❌ Ні, решту не видали</label>
+          </div>
+          <div style="font-size:11.5px; color:var(--text-3); margin-top:6px;">Довідково — на загальну оцінку не впливає.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Коментар до блоку</label>
+          <textarea class="form-textarea" id="b4_comment" placeholder="Проблеми з терміналом, відмова від видачі чека, інші інциденти..."></textarea>
+        </div>
+      </div>
+
+      <!-- ПІДСУМОК -->
+      <div class="card">
+        <div class="section-badge" style="background:#FEF2F2; color:var(--danger);">🏆 Підсумок</div>
+        <div class="form-section-title">Підсумкова оцінка та зворотний зв'язок</div>
+        <div class="form-section-sub">Ваше загальне враження від взаємодії</div>
+
+        <div class="form-group">
+          <label class="form-label" style="margin-bottom:10px;">Індекс лояльності (NPS) — наскільки ви готові рекомендувати цей сервіс друзям? (0–10)</label>
+          <div class="nps-row" id="npsRow"></div>
+          <div class="nps-labels"><span>😞 0 — Ніколи</span><span>😐 5 — Можливо</span><span>😍 10 — Точно рекомендую</span></div>
+          <input type="hidden" name="nps" id="npsValue">
+        </div>
+
+        <hr class="divider">
+
+        <div class="form-group">
+          <label class="form-label">✅ Що особливо сподобалось?</label>
+          <textarea class="form-textarea" id="liked" placeholder="Опишіть найкращі моменти взаємодії, які приємно здивували..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">❌ Що потрібно покращити?</label>
+          <textarea class="form-textarea" id="disliked" placeholder="Вкажіть конкретні проблеми та що саме не відповідало очікуванням..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">💡 Рекомендації щодо покращення</label>
+          <textarea class="form-textarea" id="recommendations" placeholder="Ваші пропозиції щодо покращення сервісу..."></textarea>
+        </div>
+      </div>
+
+      <!-- Score Preview -->
+      <div class="score-preview" id="scorePreview">
+        <div>
+          <div class="score-preview-label">Попередня оцінка</div>
+          <div style="font-size:12px; color: var(--text-3); margin-top:2px;">Заповніть зірки для розрахунку</div>
+        </div>
+        <div class="score-preview-value" id="scoreValue">—</div>
+      </div>
+
+      <!-- ФОТО І ВІДЕОФІКСАЦІЯ -->
+      <div class="card" style="border: 2px solid #DC2626;">
+        <div class="section-badge" style="background:#FEF2F2; color:#DC2626;">📸 Обов'язково</div>
+        <div class="form-section-title">Фото- та відеофіксація замовлення</div>
+        <div class="form-section-sub">Без підтверджуючих матеріалів форма не буде прийнята</div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+          <div style="display:flex; gap:12px; align-items:flex-start; padding:14px 16px; background:#FEF2F2; border:1px solid #FECACA; border-radius:10px;">
+            <div style="font-size:22px; flex-shrink:0;">📸</div>
+            <div>
+              <div style="font-size:13.5px; font-weight:700; color:#991B1B; margin-bottom:4px;">Фотофіксація — обов'язкова</div>
+              <div style="font-size:12.5px; color:#7F1D1D; line-height:1.55;">Зробіть фото: <strong>упаковки</strong> (до і після розкриття), <strong>вмісту замовлення</strong>, <strong>чека / підтвердження оплати</strong>, <strong>кур'єра</strong> (непомітно), скриншоту <strong>трекінгу</strong> з часом доставки.</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:12px; align-items:flex-start; padding:14px 16px; background:#FFF7ED; border:1px solid #FED7AA; border-radius:10px;">
+            <div style="font-size:22px; flex-shrink:0;">🎥</div>
+            <div>
+              <div style="font-size:13.5px; font-weight:700; color:#92400E; margin-bottom:4px;">Відеофіксація — обов'язкова</div>
+              <div style="font-size:12.5px; color:#78350F; line-height:1.55;">Запишіть відео: <strong>момент вручення замовлення</strong> кур'єром, <strong>розпакування</strong> (огляд вмісту), <strong>перевірку комплектності</strong>. Відео має бути безперервним, без монтажу.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:20px;">
+          <div style="font-size:13px; font-weight:700; color:var(--text-1); margin-bottom:12px;">✅ Підтвердіть наявність матеріалів:</div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13px; color:var(--text-2);">
+              <input type="checkbox" id="check_pkg_photo" style="width:18px;height:18px;accent-color:var(--primary);cursor:pointer;" required>
+              <span>📸 Фото упаковки (до і після розкриття)</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13px; color:var(--text-2);">
+              <input type="checkbox" id="check_content_photo" style="width:18px;height:18px;accent-color:var(--primary);cursor:pointer;" required>
+              <span>📸 Фото вмісту замовлення</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13px; color:var(--text-2);">
+              <input type="checkbox" id="check_receipt_photo" style="width:18px;height:18px;accent-color:var(--primary);cursor:pointer;" required>
+              <span>📸 Фото чека / підтвердження оплати</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13px; color:var(--text-2);">
+              <input type="checkbox" id="check_tracking_photo" style="width:18px;height:18px;accent-color:var(--primary);cursor:pointer;" required>
+              <span>📸 Скриншот трекінгу з часом доставки</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13px; color:var(--text-2);">
+              <input type="checkbox" id="check_delivery_video" style="width:18px;height:18px;accent-color:var(--primary);cursor:pointer;" required>
+              <span>🎥 Відео моменту вручення замовлення кур'єром</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13px; color:var(--text-2);">
+              <input type="checkbox" id="check_unbox_video" style="width:18px;height:18px;accent-color:var(--primary);cursor:pointer;" required>
+              <span>🎥 Відео розпакування та перевірки комплектності</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px;">
+          <div style="font-size:13px; font-weight:700; color:var(--text-1); margin-bottom:10px;">📤 Прикріпіть файли (фото і відео) *</div>
+          <input type="file" id="evidenceFiles" multiple accept="image/*,video/*" class="form-input" style="padding:8px 10px;" required>
+          <div id="evidenceFileList" style="margin-top:8px; font-size:12px; color:var(--text-2);"></div>
+          <div id="evidenceFolderPath" style="margin-top:12px; padding:10px 12px; background:var(--primary-light); border:1px solid #C7D2FE; border-radius:8px; font-size:12.5px; color:var(--primary);">
+            📁 Файли збережуться на сервері у папці: <strong>оберіть країну, місто й адресу в блоці 0 вище</strong>
+          </div>
+          <div style="margin-top:8px; font-size:11.5px; color:var(--text-3); line-height:1.5;">Файли завантажаться на сервер автоматично разом із формою, коли ви натиснете «Надіслати форму оцінки» — переносити їх кудись вручну не потрібно. Вони зберігаються за структурою Країна → Місто → Концепція.</div>
+        </div>
+
+        <div style="display:flex; gap:10px; padding:12px 16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; font-size:12.5px; color:#065F46;">
+          <span style="flex-shrink:0;">💡</span>
+          <span>Усі матеріали надсилайте до спільного чату / корпоративного сховища одразу після заповнення форми. Файли без підпису <em>«[дата] [місто] [номер телефону отримувача]»</em> не приймаються.</span>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">📤 Надіслати форму оцінки</button>
+    </form>
+  </div>
+
+  <!-- ══════════════ СТАТИСТИКА ══════════════ -->
+  <div id="stats" class="tab-content">
+    <div class="section-header">
+      <h2>Статистика</h2>
+      <p>Зведені дані за всіма перевірками таємного гостя</p>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:12px;">
+        <div class="icon icon-blue">🔎</div> Фільтри
+      </div>
+      <div class="form-row" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Країна</label>
+          <select class="form-select" id="statCountry">
+            <option value="">Усі країни</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Локація</label>
+          <select class="form-select" id="statLocation">
+            <option value="">Усі локації</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Період з</label>
+          <input type="date" class="form-input" id="statDateFrom">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Період по</label>
+          <input type="date" class="form-input" id="statDateTo">
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+        <button type="button" id="statResetBtn" style="padding:8px 16px; border:1.5px solid var(--border); background:var(--surface); border-radius:8px; font-size:13px; font-weight:600; color:var(--text-2); cursor:pointer;">↺ Скинути фільтри</button>
+      </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Всього перевірок</div>
+        <div class="kpi-value" id="stat-total">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Середній бал</div>
+        <div class="kpi-value" id="stat-avg">—</div>
+        <div class="kpi-sub">з 5.0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Середній NPS</div>
+        <div class="kpi-value" id="stat-nps">—</div>
+        <div class="kpi-sub">з 10</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Найкращий блок</div>
+        <div class="kpi-value" id="stat-best" style="font-size:14px; padding-top:4px;">—</div>
+      </div>
+    </div>
+
+    <!-- Charts row 1 -->
+    <div class="chart-grid-2">
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title" style="margin-bottom:12px;">
+          <div class="icon icon-blue">📊</div> Середній бал за блоками
+        </div>
+        <div class="chart-wrap">
+          <canvas id="blockChart"></canvas>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title" style="margin-bottom:12px;">
+          <div class="icon icon-orange">📈</div> Динаміка оцінок
+        </div>
+        <div class="chart-wrap">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;"></div>
+
+    <!-- Charts row 2 -->
+    <div class="chart-grid-2">
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title" style="margin-bottom:12px;">
+          <div class="icon icon-purple">🌍</div> Оцінки за країнами
+        </div>
+        <div class="chart-wrap">
+          <canvas id="countryChart"></canvas>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title" style="margin-bottom:12px;">
+          <div class="icon icon-purple">🥧</div> Розподіл оцінок
+        </div>
+        <div class="chart-wrap">
+          <canvas id="distChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;"></div>
+
+    <!-- Charts row 3 -->
+    <div class="chart-grid-2">
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title" style="margin-bottom:12px;">
+          <div class="icon icon-green">📍</div> Оцінки за критеріями
+        </div>
+        <div class="chart-wrap">
+          <canvas id="radarChart"></canvas>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title" style="margin-bottom:12px;">
+          <div class="icon icon-cyan">🏙️</div> Середній NPS за країнами
+        </div>
+        <div class="chart-wrap">
+          <canvas id="npsCountryChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;"></div>
+
+    <!-- Table -->
+    <div class="card">
+      <div class="card-title">
+        <div class="icon icon-cyan">🗂️</div> Останні перевірки
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="reviewsTable">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Телефон отримувача</th>
+              <th>Країна</th>
+              <th>Адреса / Концепція</th>
+              <th>Оформлення</th>
+              <th>Доставка</th>
+              <th>Пакування</th>
+              <th>Взаємодія</th>
+              <th>Підсумок</th>
+              <th>NPS</th>
+            </tr>
+          </thead>
+          <tbody id="reviewsBody"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <div>📋</div>
+        Даних поки немає. Заповніть форму оцінки, щоб тут з'явилась статистика.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<div class="toast" id="toast">✅ Форму успішно надіслано! Дані додано до статистики.</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+// Reviews now live in a real Postgres database on the backend (see
+// server/index.js). This array is just a client-side cache, populated by
+// loadReviews() from GET /api/reviews.
+let reviews = [];
+
+// Same-origin by default (form served by the same Express app that exposes
+// /api/*). If you host the HTML separately, set this to your backend's URL,
+// e.g. 'https://your-app.up.railway.app'.
+const API_BASE = '';
+
+function mapApiReview(r) {
+  return {
+    id: r.id,
+    date: (r.check_date || '').slice(0, 10),
+    orderId: r.order_id,
+    country: r.country,
+    city: r.city,
+    location: r.location,
+    b1: r.b1 !== null ? +r.b1 : null,
+    b2: r.b2 !== null ? +r.b2 : null,
+    b3: r.b3 !== null ? +r.b3 : null,
+    b4: r.b4 !== null ? +r.b4 : null,
+    nps: r.nps !== null ? +r.nps : null,
+  };
+}
+
+async function loadReviews() {
+  try {
+    const res = await fetch(`${API_BASE}/api/reviews`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    reviews = data.map(mapApiReview);
+  } catch (err) {
+    console.error('Не вдалося завантажити перевірки з сервера:', err);
+  }
+}
+
+const WEIGHTS = { b1:0.25, b2:0.35, b3:0.35, b4:0.05 };
+// Block 2 (courier) can be null when the order was a self-pickup ("Самовивіз")
+// — in that case its weight is redistributed proportionally among the other
+// filled blocks instead of counting as a 0.
+function weightedScore(b1, b2, b3, b4) {
+  const parts = [];
+  if (b1 !== null && b1 !== undefined) parts.push([b1, WEIGHTS.b1]);
+  if (b2 !== null && b2 !== undefined) parts.push([b2, WEIGHTS.b2]);
+  if (b3 !== null && b3 !== undefined) parts.push([b3, WEIGHTS.b3]);
+  if (b4 !== null && b4 !== undefined) parts.push([b4, WEIGHTS.b4]);
+  const totalWeight = parts.reduce((s, p) => s + p[1], 0);
+  if (!totalWeight) return 0;
+  return parts.reduce((s, p) => s + p[0] * p[1], 0) / totalWeight;
+}
+function weighted(r) {
+  return weightedScore(r.b1, r.b2, r.b3, r.b4);
+}
+
+// ─── TABS ───────────────────────────────────────────────────────────────────
+async function showTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'stats') {
+    await loadReviews();
+    populateStatFilters();
+    renderStats();
+  }
+}
+document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => showTab(btn.dataset.tab, btn));
+});
+document.getElementById('evalForm').addEventListener('submit', handleSubmit);
+document.getElementById('country').addEventListener('change', onCountryChange);
+document.getElementById('city').addEventListener('change', onCityChange);
+
+// ─── BLOCK 1 VARIANT (channel-dependent) ───────────────────────────────────
+// When the order was placed by phone, Block 1 asks about the call-center
+// operator instead of app/site usability.
+function updateB1Variant() {
+  const channel = document.getElementById('channel').value;
+  const isPhone = channel === 'Телефон';
+  const isOnsite = channel === 'На локації';
+  document.getElementById('b1-variant-default').style.display = (!isPhone && !isOnsite) ? '' : 'none';
+  document.getElementById('b1-variant-phone').style.display = isPhone ? '' : 'none';
+  document.getElementById('b1-variant-onsite').style.display = isOnsite ? '' : 'none';
+  document.getElementById('b1SectionSub').textContent = isPhone
+    ? 'Оцініть спілкування з оператором кол-центру під час оформлення замовлення'
+    : isOnsite
+      ? 'Оцініть обслуговування та спілкування з працівником під час оформлення замовлення на локації'
+      : 'Оцініть процес оформлення та зручність платформи';
+}
+document.getElementById('channel').addEventListener('change', updateB1Variant);
+updateB1Variant();
+
+// ─── PICKUP vs COURIER DELIVERY (deliveryType-dependent) ───────────────────
+// "Самовивіз" adds a "how long until ready" question to Block 1 and makes
+// Block 2 (courier) not applicable, since no courier is involved.
+function updateDeliveryTypeVariant() {
+  const isPickup = document.getElementById('deliveryType').value === 'Самовивіз';
+  document.getElementById('b1-pickup-time').style.display = isPickup ? '' : 'none';
+  document.getElementById('block2Content').style.display = isPickup ? 'none' : '';
+  document.getElementById('block2NotApplicable').style.display = isPickup ? '' : 'none';
+  calcLiveScore();
+}
+document.getElementById('deliveryType').addEventListener('change', updateDeliveryTypeVariant);
+updateDeliveryTypeVariant();
+
+// ─── EVIDENCE FILES ─────────────────────────────────────────────────────────
+// Files are uploaded to this app's own backend (see server/index.js →
+// POST /api/upload) and stored under UPLOAD_DIR/<country>/<city>/<location>/.
+// This just previews the destination path — no external service involved.
+function updateFolderPath() {
+  const country = document.getElementById('country').value;
+  const city = document.getElementById('city').value;
+  const location = document.getElementById('location').value;
+  const el = document.getElementById('evidenceFolderPath');
+  if (country && city && location) {
+    el.innerHTML = `📁 Файли збережуться на сервері у папці: <strong>${country} / ${city} / ${location}</strong>`;
+  } else if (country && city) {
+    el.innerHTML = `📁 Файли збережуться на сервері у папці: <strong>${country} / ${city} / …</strong> — оберіть адресу/концепцію`;
+  } else if (country) {
+    el.innerHTML = `📁 Файли збережуться на сервері у папці: <strong>${country} / …</strong> — оберіть місто`;
+  } else {
+    el.innerHTML = '📁 Файли збережуться на сервері у папці: <strong>оберіть країну, місто й адресу в блоці 0 вище</strong>';
+  }
+}
+document.getElementById('country').addEventListener('change', updateFolderPath);
+document.getElementById('city').addEventListener('change', updateFolderPath);
+document.getElementById('location').addEventListener('change', updateFolderPath);
+
+document.getElementById('evidenceFiles').addEventListener('change', (e) => {
+  const files = Array.from(e.target.files);
+  const list = document.getElementById('evidenceFileList');
+  list.innerHTML = files.length
+    ? files.map(f => `📎 ${f.name} <span style="color:var(--text-3);">(${(f.size/1024/1024).toFixed(1)} МБ)</span>`).join('<br>')
+    : '';
+});
+
+document.getElementById('statCountry').addEventListener('change', () => {
+  document.getElementById('statLocation').value = '';
+  populateStatFilters();
+  renderStats();
+});
+document.getElementById('statLocation').addEventListener('change', renderStats);
+document.getElementById('statDateFrom').addEventListener('change', renderStats);
+document.getElementById('statDateTo').addEventListener('change', renderStats);
+document.getElementById('statResetBtn').addEventListener('click', () => {
+  document.getElementById('statCountry').value = '';
+  document.getElementById('statLocation').value = '';
+  document.getElementById('statDateFrom').value = '';
+  document.getElementById('statDateTo').value = '';
+  populateStatFilters();
+  renderStats();
+});
+
+// ─── NPS BUTTONS ────────────────────────────────────────────────────────────
+(function buildNPS() {
+  const row = document.getElementById('npsRow');
+  for (let i = 0; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'nps-btn';
+    btn.textContent = i;
+    btn.onclick = () => {
+      document.querySelectorAll('.nps-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('npsValue').value = i;
+    };
+    row.appendChild(btn);
+  }
+})();
+
+// ─── LIVE SCORE ─────────────────────────────────────────────────────────────
+function calcLiveScore() {
+  const blockMap = {
+    b1_interface:'b1', b1_info:'b1', b1_confirm:'b1', b1_tracking:'b1',
+    b1_p_speed:'b1', b1_p_manner:'b1', b1_p_info:'b1', b1_p_order:'b1', b1_p_upsell:'b1',
+    b1_o_clean:'b1', b1_o_manner:'b1', b1_o_info:'b1', b1_o_order:'b1', b1_o_upsell:'b1',
+    b1_pickup_time:'b1',
+    b2_time:'b2', b2_appearance:'b2', b2_politeness:'b2',
+    b3_packaging:'b3', b3_completeness:'b3', b3_quality:'b3',
+    b4_payment:'b4', b4_receipt:'b4'
+  };
+  const sums = {b1:0,b2:0,b3:0,b4:0}, counts = {b1:0,b2:0,b3:0,b4:0};
+  Object.keys(blockMap).forEach(f => {
+    const checked = document.querySelector(`input[name="${f}"]:checked`);
+    if (checked) { sums[blockMap[f]] += +checked.value; counts[blockMap[f]]++; }
+  });
+  const isPickup = document.getElementById('deliveryType').value === 'Самовивіз';
+  const avgs = {};
+  let allFilled = true;
+  ['b1','b2','b3','b4'].forEach(b => {
+    if (b === 'b2' && isPickup) { avgs[b] = null; return; } // не застосовується при самовивозі
+    avgs[b] = counts[b] > 0 ? sums[b]/counts[b] : null;
+    if (avgs[b] === null) allFilled = false;
+  });
+  if (allFilled) {
+    const score = weightedScore(avgs.b1, avgs.b2, avgs.b3, avgs.b4);
+    document.getElementById('scoreValue').textContent = score.toFixed(2);
+  }
+}
+document.querySelectorAll('.stars input').forEach(inp => inp.addEventListener('change', calcLiveScore));
+
+// ─── FORM SUBMIT ────────────────────────────────────────────────────────────
+function radioValue(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : null;
+}
+function fieldValue(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : null;
+}
+
+async function handleSubmit(e) {
+  e.preventDefault();
+
+  const evidenceInput = document.getElementById('evidenceFiles');
+  if (!evidenceInput.files.length) {
+    alert('Прикріпіть хоча б один файл (фото або відео) перед надсиланням форми.');
+    evidenceInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  const submitBtn = e.target.querySelector('.submit-btn');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ Надсилання…'; }
+
+  const getAvg = (fields) => {
+    const vals = fields.map(f => {
+      const el = document.querySelector(`input[name="${f}"]:checked`);
+      return el ? +el.value : null;
+    }).filter(v => v !== null);
+    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 3;
+  };
+
+  const country = fieldValue('country') || '—';
+  const city = fieldValue('city') || '—';
+  const location = fieldValue('location') || '—';
+  const orderId = fieldValue('orderId') || '#—';
+
+  const isPickup = fieldValue('deliveryType') === 'Самовивіз';
+  const b1Fields = (
+    fieldValue('channel') === 'Телефон'
+      ? ['b1_p_speed','b1_p_manner','b1_p_info','b1_p_order','b1_p_upsell']
+      : fieldValue('channel') === 'На локації'
+        ? ['b1_o_clean','b1_o_manner','b1_o_info','b1_o_order','b1_o_upsell']
+        : ['b1_interface','b1_info','b1_confirm','b1_tracking']
+  ).concat(isPickup ? ['b1_pickup_time'] : []);
+
+  const rec = {
+    checkDate: fieldValue('checkDate') || new Date().toISOString().slice(0,10),
+    checkTime: fieldValue('checkTime'),
+    orderId, country, city, location,
+    channel: fieldValue('channel'),
+    deliveryType: fieldValue('deliveryType'),
+    guestName: fieldValue('guestName'),
+    b1: +getAvg(b1Fields).toFixed(2),
+    // Block 2 (courier) is not applicable for self-pickup — send null instead
+    // of a default/fake average so it's excluded from the weighted score.
+    b2: isPickup ? null : +getAvg(['b2_time','b2_appearance','b2_politeness']).toFixed(2),
+    b3: +getAvg(['b3_packaging','b3_completeness','b3_quality']).toFixed(2),
+    b4: +getAvg(['b4_payment','b4_receipt']).toFixed(2),
+    nps: document.getElementById('npsValue').value !== '' ? +document.getElementById('npsValue').value : null,
+    b1Comment: fieldValue('b1_comment'),
+    b2Comment: fieldValue('b2_comment'),
+    b3Comment: fieldValue('b3_comment'),
+    b4Comment: fieldValue('b4_comment'),
+    b2Named: radioValue('b2_named'),
+    b2OfferedCheck: radioValue('b2_offered_check'),
+    b2Clarified: radioValue('b2_clarified'),
+    b3AllItems: radioValue('b3_all_items'),
+    b4ReceiptGiven: radioValue('b4_receipt_given'),
+    b4ChangeGiven: radioValue('b4_change_given'),
+    liked: fieldValue('liked'),
+    disliked: fieldValue('disliked'),
+    recommendations: fieldValue('recommendations'),
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/api/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(rec),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    // Upload attached evidence files, if any were selected
+    const filesInput = document.getElementById('evidenceFiles');
+    if (filesInput.files.length) {
+      const fd = new FormData();
+      fd.append('country', country);
+      fd.append('city', city);
+      fd.append('location', location);
+      fd.append('orderId', orderId);
+      Array.from(filesInput.files).forEach(f => fd.append('files', f));
+      const uploadRes = await fetch(`${API_BASE}/api/upload`, { method: 'POST', body: fd });
+      if (!uploadRes.ok) console.error('Не вдалося завантажити файли:', uploadRes.status);
+    }
+
+    const toast = document.getElementById('toast');
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3500);
+    e.target.reset();
+    document.getElementById('scoreValue').textContent = '—';
+    document.getElementById('evidenceFileList').innerHTML = '';
+    updateFolderPath();
+    document.getElementById('city').disabled = true;
+    document.getElementById('location').disabled = true;
+    document.querySelectorAll('.nps-btn').forEach(b => b.classList.remove('selected'));
+    await showTab('stats', document.querySelectorAll('.tab-btn')[3]);
+  } catch (err) {
+    console.error(err);
+    alert('Не вдалося надіслати форму. Перевірте з’єднання з сервером і спробуйте ще раз.');
+  } finally {
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '📤 Надіслати форму оцінки'; }
+  }
+}
+
+// ─── CHARTS ─────────────────────────────────────────────────────────────────
+const PALETTE = ['#4F46E5','#0891B2','#059669','#D97706','#7C3AED','#DC2626'];
+let charts = {};
+
+function destroyCharts() {
+  Object.values(charts).forEach(c => { if(c) c.destroy(); });
+  charts = {};
+}
+
+// ─── STAT FILTERS ───────────────────────────────────────────────────────────
+function populateStatFilters() {
+  const countrySel = document.getElementById('statCountry');
+  const locationSel = document.getElementById('statLocation');
+  const prevCountry = countrySel.value;
+  const prevLocation = locationSel.value;
+
+  const allCountries = [...new Set(reviews.map(r => r.country))].sort();
+  countrySel.innerHTML = '<option value="">Усі країни</option>' +
+    allCountries.map(c => `<option value="${c}">${c}</option>`).join('');
+  countrySel.value = allCountries.includes(prevCountry) ? prevCountry : '';
+
+  const scopedReviews = countrySel.value ? reviews.filter(r => r.country === countrySel.value) : reviews;
+  const allLocations = [...new Set(scopedReviews.map(r => r.location || r.city).filter(Boolean))].sort();
+  locationSel.innerHTML = '<option value="">Усі локації</option>' +
+    allLocations.map(l => `<option value="${l}">${l}</option>`).join('');
+  locationSel.value = allLocations.includes(prevLocation) ? prevLocation : '';
+}
+
+function getFilteredReviews() {
+  const country = document.getElementById('statCountry').value;
+  const location = document.getElementById('statLocation').value;
+  const dateFrom = document.getElementById('statDateFrom').value;
+  const dateTo = document.getElementById('statDateTo').value;
+  return reviews.filter(r => {
+    if (country && r.country !== country) return false;
+    if (location && (r.location || r.city) !== location) return false;
+    if (dateFrom && r.date < dateFrom) return false;
+    if (dateTo && r.date > dateTo) return false;
+    return true;
+  });
+}
+
+function renderStats() {
+  destroyCharts();
+  const filtered = getFilteredReviews();
+  const total = filtered.length;
+  if (reviews.length === 0) {
+    document.getElementById('emptyState').innerHTML = '<div>📋</div>Даних поки немає. Заповніть форму оцінки, щоб тут з\'явилась статистика.';
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('reviewsBody').innerHTML = '';
+    ['stat-total','stat-avg','stat-nps','stat-best'].forEach(id => document.getElementById(id).textContent = '—');
+    return;
+  }
+  if (total === 0) {
+    document.getElementById('emptyState').innerHTML = '<div>🔍</div>Немає перевірок за обраними фільтрами. Спробуйте змінити країну, локацію або період.';
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('reviewsBody').innerHTML = '';
+    ['stat-total','stat-avg','stat-nps','stat-best'].forEach(id => document.getElementById(id).textContent = '—');
+    return;
+  }
+  document.getElementById('emptyState').style.display = 'none';
+
+  const reviewsSrc = filtered;
+  const scores = reviewsSrc.map(r => weighted(r));
+  const avg = scores.reduce((a,b)=>a+b,0)/scores.length;
+  const npsVals = reviewsSrc.filter(r => r.nps !== null).map(r => r.nps);
+  const avgNps = npsVals.length ? npsVals.reduce((a,b)=>a+b,0)/npsVals.length : 0;
+
+  // r.b2 can be null for self-pickup orders (no courier) — exclude those
+  // from this particular average instead of letting them drag it down.
+  const avgOfBlock = (field) => {
+    const vals = reviewsSrc.filter(r => r[field] !== null && r[field] !== undefined).map(r => r[field]);
+    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+  };
+  const blockAvgs = {
+    'Оформлення': avgOfBlock('b1'),
+    'Доставка':   avgOfBlock('b2'),
+    'Пакування':  avgOfBlock('b3'),
+    'Взаємодія':  avgOfBlock('b4'),
+  };
+  const bestBlock = Object.entries(blockAvgs).sort((a,b)=>b[1]-a[1])[0];
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-avg').textContent = avg.toFixed(2);
+  document.getElementById('stat-nps').textContent = avgNps.toFixed(1);
+  document.getElementById('stat-best').textContent = bestBlock[0];
+  document.getElementById('stat-avg').style.color = avg >= 4 ? '#059669' : avg >= 3 ? '#D97706' : '#DC2626';
+
+  Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  Chart.defaults.color = '#64748B';
+
+  // Bar: блоки
+  charts.block = new Chart(document.getElementById('blockChart'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(blockAvgs),
+      datasets: [{
+        data: Object.values(blockAvgs).map(v => +v.toFixed(2)),
+        backgroundColor: PALETTE.slice(0,4).map(c => c+'CC'),
+        borderColor: PALETTE.slice(0,4),
+        borderWidth: 1.5,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y.toFixed(2)} / 5.0` } } },
+      scales: {
+        y: { min:0, max:5, grid:{ color:'#F1F5F9' }, ticks:{ font:{size:11} } },
+        x: { grid:{ display:false }, ticks:{ font:{size:11} } }
+      }
+    }
+  });
+
+  // Line: динаміка
+  const sorted = [...reviewsSrc].sort((a,b)=>a.date.localeCompare(b.date));
+  charts.trend = new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: sorted.map(r => r.date.slice(5)),
+      datasets: [{
+        label: 'Підсумковий бал',
+        data: sorted.map(r => +weighted(r).toFixed(2)),
+        borderColor: '#4F46E5',
+        backgroundColor: 'rgba(79,70,229,0.08)',
+        borderWidth: 2,
+        pointBackgroundColor: '#4F46E5',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        tension: 0.35,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{ display:false },
+        tooltip:{ callbacks:{ label: ctx => ` ${ctx.parsed.y} / 5.0` } } },
+      scales: {
+        y: { min:0, max:5, grid:{ color:'#F1F5F9' }, ticks:{ font:{size:11} } },
+        x: { grid:{ display:false }, ticks:{ font:{size:10}, maxRotation:45 } }
+      }
+    }
+  });
+
+  // Bar: оцінки за країнами
+  const countryFlags = {'Україна':'🇺🇦','Польща':'🇵🇱','Грузія':'🇬🇪'};
+  const countryColorMap = {'Україна':'#4F46E5','Польща':'#DC2626','Грузія':'#D97706'};
+  const countries = [...new Set(reviewsSrc.map(r => r.country))].sort();
+  const countryColors = countries.map((c,i) => countryColorMap[c] || PALETTE[i % PALETTE.length]);
+  const countryScores = countries.map(c => {
+    const rr = reviewsSrc.filter(r => r.country === c);
+    return rr.length ? +(rr.reduce((s,r)=>s+weighted(r),0)/rr.length).toFixed(2) : 0;
+  });
+  const countryCount = countries.map(c => reviewsSrc.filter(r => r.country === c).length);
+  charts.country = new Chart(document.getElementById('countryChart'), {
+    type: 'bar',
+    data: {
+      labels: countries.map((c,i) => `${countryFlags[c]} ${c} (${countryCount[i]})`),
+      datasets: [{
+        label: 'Середній бал',
+        data: countryScores,
+        backgroundColor: countryColors.map(c => c+'CC'),
+        borderColor: countryColors,
+        borderWidth: 1.5,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{ display:false },
+        tooltip:{ callbacks:{ label: ctx => ` ${ctx.parsed.y.toFixed(2)} / 5.0` } } },
+      scales: {
+        y: { min:0, max:5, grid:{ color:'#F1F5F9' }, ticks:{ font:{size:11} } },
+        x: { grid:{ display:false }, ticks:{ font:{size:11} } }
+      }
+    }
+  });
+
+  // Donut: розподіл
+  const bands = [0,0,0,0,0];
+  scores.forEach(s => {
+    if (s < 2) bands[0]++;
+    else if (s < 3) bands[1]++;
+    else if (s < 4) bands[2]++;
+    else if (s < 4.5) bands[3]++;
+    else bands[4]++;
+  });
+  charts.dist = new Chart(document.getElementById('distChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['< 2 Критично','2–3 Погано','3–4 Задовільно','4–4.5 Добре','4.5–5 Відмінно'],
+      datasets: [{
+        data: bands,
+        backgroundColor: ['#DC2626CC','#EA580CCC','#D97706CC','#2563EBCC','#059669CC'],
+        borderColor: ['#DC2626','#EA580C','#D97706','#2563EB','#059669'],
+        borderWidth: 1.5,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: {
+        legend: { position:'bottom', labels:{ font:{size:11}, padding:10, boxWidth:12 } },
+        tooltip: { callbacks:{ label: ctx => ` ${ctx.raw} візит(и)` } }
+      }
+    }
+  });
+
+  // Radar: критерії
+  const criteriaAvg = {
+    'Інтерфейс':      avgOfBlock('b1'),
+    'Пунктуальність': avgOfBlock('b2'),
+    'Кур\'єр':        avgOfBlock('b2'),
+    'Пакування':      avgOfBlock('b3'),
+    'Комплектність':  avgOfBlock('b3'),
+    'Оплата':         avgOfBlock('b4'),
+  };
+  charts.radar = new Chart(document.getElementById('radarChart'), {
+    type: 'radar',
+    data: {
+      labels: Object.keys(criteriaAvg),
+      datasets: [{
+        label: 'Середня оцінка',
+        data: Object.values(criteriaAvg).map(v => +v.toFixed(2)),
+        borderColor: '#0891B2',
+        backgroundColor: 'rgba(8,145,178,0.15)',
+        borderWidth: 2,
+        pointBackgroundColor: '#0891B2',
+        pointRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{ display:false } },
+      scales: {
+        r: {
+          min:0, max:5,
+          ticks:{ stepSize:1, font:{size:10}, backdropColor:'transparent' },
+          grid:{ color:'#E2E8F0' },
+          pointLabels:{ font:{size:11} }
+        }
+      }
+    }
+  });
+
+  // Bar: NPS за країнами
+  const countryNps = countries.map(c => {
+    const rr = reviewsSrc.filter(r => r.country === c && r.nps !== null);
+    return rr.length ? +(rr.reduce((s,r)=>s+r.nps,0)/rr.length).toFixed(1) : 0;
+  });
+  charts.npsCountry = new Chart(document.getElementById('npsCountryChart'), {
+    type: 'bar',
+    data: {
+      labels: countries.map((c,i) => `${countryFlags[c]} ${c}`),
+      datasets: [{
+        label: 'Середній NPS',
+        data: countryNps,
+        backgroundColor: countryColors.map(c => c+'CC'),
+        borderColor: countryColors,
+        borderWidth: 1.5,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{ display:false },
+        tooltip:{ callbacks:{ label: ctx => ` NPS: ${ctx.parsed.y} / 10` } } },
+      scales: {
+        y: { min:0, max:10, grid:{ color:'#F1F5F9' }, ticks:{ font:{size:11} } },
+        x: { grid:{ display:false }, ticks:{ font:{size:11} } }
+      }
+    }
+  });
+
+  // Table
+  const sorted2 = [...reviewsSrc].sort((a,b)=>b.date.localeCompare(a.date));
+  const flagMap = {'Україна':'🇺🇦','Польща':'🇵🇱','Грузія':'🇬🇪'};
+  document.getElementById('reviewsBody').innerHTML = sorted2.slice(0,12).map(r => {
+    const ws = weighted(r);
+    const chipClass = ws >= 4.3 ? 'chip-high' : ws >= 3.5 ? 'chip-mid' : 'chip-low';
+    const npsChip = r.nps !== null
+      ? `<span class="score-chip ${r.nps>=8?'chip-high':r.nps>=6?'chip-mid':'chip-low'}">${r.nps}</span>` : '—';
+    const flag = flagMap[r.country] || '';
+    return `<tr>
+      <td>${r.date}</td>
+      <td><strong>${r.orderId}</strong></td>
+      <td>${flag} ${r.country || '—'}</td>
+      <td style="font-size:12px;">${r.location || r.city || '—'}</td>
+      <td>${r.b1.toFixed(1)}</td>
+      <td>${r.b2 !== null ? r.b2.toFixed(1) : '—'}</td>
+      <td>${r.b3.toFixed(1)}</td>
+      <td>${r.b4.toFixed(1)}</td>
+      <td><span class="score-chip ${chipClass}">${ws.toFixed(2)}</span></td>
+      <td>${npsChip}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── LOCATION DATA ──────────────────────────────────────────────────────────
+const LOCATIONS = {
+  'Україна': {
+    'Київ': [
+      'Київ, Глибочицька 13',
+      'Київ, Метрологічна 15',
+      'Київ, Чавдар 13',
+      'Київ, М.Максимовича 24А',
+      'Київ, Родини Крістерів 18/6',
+      'Київ, Драгоманова 10',
+      'Київ, А. Малишка 102',
+      'Київ, Мечникова 10/2',
+      'Київ, Салютна 2',
+      'Київ, Андрія Верхогляда 15',
+      'Київ, Градинська 1',
+      'Київ, Бессарабський ринок',
+    ],
+    'Дніпро': [
+      'Дніпро, О.Поля 10/12',
+      'Дніпро, Перемоги 112Д',
+    ],
+    'Львів': [
+      'Львів, Княгині Ольги 98В',
+    ],
+    'Харків': [
+      'Харків, Сумська 86',
+    ],
+  },
+  'Польща': {
+    'Варшава': [
+      'Варшава, Aignera 6',
+      'Варшава, Ordona 5F',
+      'Варшава, Бровари',
+    ],
+    'Вроцлав': [
+      'Вроцлав, Księcia Witolda 15',
+    ],
+  },
+  'Грузія': {
+    'Тбілісі': [
+      'Тбілісі, Руставелі 22',
+      'Тбілісі, Пекіні 45',
+    ],
+    'Батумі': [
+      'Батумі, Приморський бульвар 12',
+    ],
+  },
+};
+
+function onCountryChange() {
+  const country = document.getElementById('country').value;
+  const citySel = document.getElementById('city');
+  const locSel  = document.getElementById('location');
+
+  citySel.innerHTML = '<option value="">— Оберіть місто —</option>';
+  locSel.innerHTML  = '<option value="">— Спочатку оберіть місто —</option>';
+  locSel.disabled   = true;
+
+  if (country && LOCATIONS[country]) {
+    Object.keys(LOCATIONS[country]).forEach(city => {
+      const opt = document.createElement('option');
+      opt.value = city;
+      opt.textContent = city;
+      citySel.appendChild(opt);
+    });
+    citySel.disabled = false;
+  } else {
+    citySel.disabled = true;
+  }
+}
+
+function onCityChange() {
+  const country = document.getElementById('country').value;
+  const city    = document.getElementById('city').value;
+  const locSel  = document.getElementById('location');
+
+  locSel.innerHTML = '<option value="">— Оберіть адресу —</option>';
+
+  if (country && city && LOCATIONS[country] && LOCATIONS[country][city]) {
+    LOCATIONS[country][city].forEach(addr => {
+      const opt = document.createElement('option');
+      opt.value = addr;
+      opt.textContent = addr;
+      locSel.appendChild(opt);
+    });
+    locSel.disabled = false;
+  } else {
+    locSel.disabled = true;
+  }
+}
+
+// Init
+document.getElementById('checkDate').valueAsDate = new Date();
+</script>
+</body>
+</html>
